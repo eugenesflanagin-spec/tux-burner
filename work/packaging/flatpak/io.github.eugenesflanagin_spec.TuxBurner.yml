@@ -1,0 +1,100 @@
+# daemon-on-flatpak -- PACKAGING HALF DONE (milestone B4a): the root daemon is
+# the compiled Rust tux-burnerd (burnerd/), and the Flatpak BUILD now
+# compiles it into the sandbox at /app/libexec/tux-burnerd via the
+# rust-stable SDK extension + the tux-burnerd cargo module below. That build
+# is fully offline for Flathub: it consumes the committed cargo-sources.json
+# (vendored crate archives + a cargo config redirecting crates.io to them);
+# refresh it with `python3 packaging/flatpak/gen-cargo-sources.py` whenever
+# burnerd/Cargo.lock changes (see packaging/flatpak/README.md).
+#
+# The pkexec-elevated service lifecycle stages this binary atomically at the
+# host's root-owned /var/opt/tux-burner/libexec/tux-burnerd. Generated
+# units always execute that fixed path, never the Flatpak deployment path.
+app-id: io.github.eugenesflanagin_spec.TuxBurner
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# MinGW cross-toolchain for the NVAPI latency shim (a PE nvapi64.dll built at
+# package time by setup.py; see docs/nvapi-shim.md). Build-time only -- the
+# extension is not part of the installed app.
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.mingw-w64
+  # Rust toolchain for the root daemon (tux-burnerd). Build-time only --
+  # the extension is not part of the installed app; only the compiled binary at
+  # /app/libexec/tux-burnerd ships.
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: tux-burner
+
+cleanup:
+  - /lib/debug
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --talk-name=org.freedesktop.Flatpak
+  - --device=dri
+  # Steam libraries can live on any host mount named by libraryfolders.vdf.
+  # Read-only host visibility lets discovery follow those paths without giving
+  # Tux Burner write access outside the existing home permission.
+  - --filesystem=host:ro
+  - --filesystem=home
+  - --filesystem=/run/tux-burnerd.sock
+
+modules:
+  # Root daemon: compiled from the bundled Rust crate (burnerd/) with the
+  # rust-stable SDK extension and installed to the sandbox staging path
+  # /app/libexec/tux-burnerd (0755). Fully OFFLINE for Flathub -- the
+  # cargo-sources.json source extracts vendored crate archives to cargo/vendor
+  # plus a cargo/config redirecting crates.io there, so `cargo build --offline
+  # --locked` resolves everything with no network. CARGO_HOME points at that
+  # extracted config; --locked pins the committed Cargo.lock. The elevated
+  # lifecycle copies it to the host's canonical /var/opt target at install.
+  - name: tux-burnerd
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/tux-burnerd/cargo
+    build-commands:
+      - cargo build --release --locked --offline
+      - install -Dm755 target/release/tux-burnerd /app/libexec/tux-burnerd
+    sources:
+      - type: dir
+        path: ../../burnerd
+      - cargo-sources.json
+  - name: tux-burner
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/mingw-w64/bin
+      build-args:
+        - --share=network
+      env:
+        TUX_BURNER_REQUIRE_NATIVE_LAYER: "1"
+        # The SDK cannot build 32-bit objects: its gcc has no multilib and no
+        # 32-bit libgcc exists in the SDK or Sdk.Compat.i386, so -m32 compiles
+        # and never links, and flathub has no i386 runtime to build in. The
+        # layer is prepared outside the sandbox by
+        # scripts/build-native-layer-i386.sh, which the build driver runs
+        # first; REQUIRE keeps a missing one from shipping silently.
+        TUX_BURNER_NATIVE_LAYER32_PREBUILT: /run/build/tux-burner/dist/native-layer-i386
+        TUX_BURNER_REQUIRE_NATIVE_LAYER32: "1"
+        # Fail the build loudly if the shim DLL cannot be produced -- a silent
+        # skip ships the in-game latency feature hollow (release-plan B2).
+        TUX_BURNER_REQUIRE_NVAPI_SHIM: "1"
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    sources:
+      - type: dir
+        path: ../..
+    build-commands:
+      - python3 -m pip install --prefix=/app --no-build-isolation --no-cache-dir --no-compile .
+      - rm -rf /app/lib/python*/site-packages/PySide6/Qt/qml /app/lib/python*/site-packages/PySide6/Qt/translations /app/lib/python*/site-packages/PySide6/Qt/metatypes /app/lib/python*/site-packages/PySide6/Qt/bin
+      - rm -rf /app/lib/python*/site-packages/PySide6/assistant /app/lib/python*/site-packages/PySide6/designer /app/lib/python*/site-packages/PySide6/linguist /app/lib/python*/site-packages/PySide6/lrelease /app/lib/python*/site-packages/PySide6/lupdate /app/lib/python*/site-packages/PySide6/qmllint /app/lib/python*/site-packages/PySide6/qmlls /app/lib/python*/site-packages/PySide6/qmlformat /app/lib/python*/site-packages/PySide6/svgtoqml
+      - rm -rf /app/lib/python*/site-packages/PySide6/glue /app/lib/python*/site-packages/PySide6/scripts /app/lib/python*/site-packages/PySide6/typesystems
+      - find /app/lib/python*/site-packages -type d \( -name __pycache__ -o -name tests -o -name test -o -name examples \) -prune -exec rm -rf {} +
+      - find /app/lib/python*/site-packages -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.pyi' \) -delete
+      - install -Dm644 packaging/flatpak/io.github.eugenesflanagin_spec.TuxBurner.desktop /app/share/applications/io.github.eugenesflanagin_spec.TuxBurner.desktop
+      - install -Dm644 packaging/flatpak/io.github.eugenesflanagin_spec.TuxBurner.metainfo.xml /app/share/metainfo/io.github.eugenesflanagin_spec.TuxBurner.metainfo.xml
+      - install -Dm644 packaging/icons/hicolor/256x256/apps/tux-burner.png /app/share/icons/hicolor/256x256/apps/io.github.eugenesflanagin_spec.TuxBurner.png
+      - install -Dm644 packaging/icons/hicolor/512x512/apps/tux-burner.png /app/share/icons/hicolor/512x512/apps/io.github.eugenesflanagin_spec.TuxBurner.png

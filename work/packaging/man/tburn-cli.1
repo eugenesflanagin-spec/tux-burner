@@ -1,0 +1,98 @@
+.TH TBURN-CLI 1 "October 2026" "Tux Burner 0.99" "User Commands"
+.SH NAME
+tburn-cli, tux-burner-cli \- command line of Tux Burner, GPU undervolting and tuning
+.SH SYNOPSIS
+.B tburn-cli
+[\fIoptions\fR]
+.br
+.B tburn-cli \-\-amd\-status
+.br
+.B tburn-cli \-\-amd\-plan
+.IR KEY=VALUE ...
+[\fB\-\-amd\-apply\fR] [\fB\-\-amd\-dry\-run\fR]
+.SH DESCRIPTION
+.B Tux Burner
+tunes GPU voltage, clocks, power limit and fans, and switches between saved
+profiles while you play. On AMD GPUs it uses the amdgpu OverDrive sysfs interface;
+on NVIDIA GPUs it uses the upstream NVML/NVAPI backend. Hardware writes are done by
+the root service \fBtux-burnerd\fR(8); this command runs as your normal user and talks
+to it over a local socket.
+.PP
+Tux Burner is a fork of PenguinBurner by jpietek
+(https://github.com/jpietek/PenguinBurner), GPL-3.0-or-later. It is an independent
+fork, not endorsed by or affiliated with the author of PenguinBurner.
+.SH OPTIONS
+.TP
+.B \-\-help
+Print the full list of options (it is long; the groups are Auto-UV, Steam overlay setup,
+Runtime and daemon, Runtime tuning, Advanced/debug and AMD tuning).
+.TP
+.B \-\-version
+Print the version and the fork notice, then exit.
+.SS AMD (amdgpu) options
+.TP
+.B \-\-amd\-status
+Print the GPU's OverDrive ranges, live values, fan curve and LACT state. Read-only.
+.TP
+.BI \-\-amd\-plan " KEY=VALUE..."
+Describe a tuning plan. Keys: vo (VDDGFX offset in mV, negative = undervolt), sclk (core
+clock offset in MHz), mclk (memory clock max in MHz), power (watts or a percentage such as 110%),
+fan (up to five TEMP:PERCENT points). Without \fB\-\-amd\-apply\fR it only prints the writes.
+.TP
+.B \-\-amd\-dry\-run
+With \fB\-\-amd\-apply\fR or \fB\-\-amd\-auto\-uv\fR: show what would be done, write nothing.
+.TP
+.B \-\-amd\-apply
+Write the plan through tux-burnerd. Refused while LACT (lactd) is running unless
+\fB\-\-override\-lact\fR is given.
+.TP
+.BI \-\-amd\-save\-profile " NAME"
+Save the plan as a Tux Burner profile.
+.TP
+.BI \-\-amd\-profile\-tier " TIER"
+Tier for the saved profile: efficiency, balanced or performance.
+.TP
+.BI \-\-amd\-export\-lact " FILE"
+Write the plan as a LACT gpus: block.
+.TP
+.BI \-\-amd\-stress " SECONDS"
+Run the OpenCL stress workload (sustained GPU load). No tuning writes.
+.TP
+.B \-\-amd\-auto\-uv
+Run the VDDGFX undervolt ladder (sustained GPU load). Options: \fB\-\-amd\-auto\-uv\-start\fR,
+\fB\-\-amd\-auto\-uv\-step\fR, \fB\-\-amd\-auto\-uv\-floor\fR, \fB\-\-amd\-auto\-uv\-rung\-seconds\fR,
+\fB\-\-amd\-auto\-uv\-margin\fR.
+.TP
+.BI \-\-amd\-voltage\-floor " MV"
+Safety floor for the VDDGFX offset (default \-150). Going deeper than the default also needs
+\fB\-\-allow\-below\-floor\fR.
+.TP
+.B \-\-allow\-below\-floor
+Confirm that you want a floor deeper than the default.
+.TP
+.B \-\-override\-lact
+Write even though LACT is running and owns the GPU.
+.TP
+.BI \-\-amd\-set\-daemon\-floor " MV|default"
+Set the daemon's own floor (stored in /etc/tux-burner/amd-vddgfx-floor-mv).
+.TP
+.BR \-\-amd\-restore " {lact|stock}"
+Restore the GPU: \fBlact\fR asks lactd to re-apply its profile; \fBstock\fR resets OverDrive, the
+power cap and (without LACT) the fan curve to driver defaults through tux-burnerd.
+.SH FILES
+.TP
+.I ~/.config/TuxBurner/
+Saved profiles, run history, settings. Copied from ~/.config/PenguinBurner on first use.
+.TP
+.I /etc/tux-burner/amd-vddgfx-floor-mv
+The daemon's VDDGFX safety floor.
+.TP
+.I /run/tux-burnerd.sock
+The daemon socket.
+.SH SEE ALSO
+.BR tux-burner (1),
+.BR tux-burnerd (8),
+the user guide in /usr/share/doc/tux-burner/
+.SH AUTHORS
+Tux Burner is Copyright (C) 2026 by Eugene Flanagin. Licensed under GPL-3.0-or-later.
+Based on PenguinBurner by jpietek, GPL-3.0-or-later.

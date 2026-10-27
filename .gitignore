@@ -1,0 +1,28 @@
+# makepkg build output
+/src/
+/pkg/
+*.pkg.tar.*
+*.tar.gz
+*.tar.zst
+*.part
+# pristine upstream copy (regenerated from the v0.8.3 tarball; the diff lives in local.patch)
+upstream-v0.8.3/
+# cargo / python build caches inside the work tree
+work/burnerd/target/
+work/build/
+work/dist/
+work/*.egg-info/
+cargo-target/
+__pycache__/
+*.pyc
+*.log
+# Upstream's NVIDIA-era screenshots/demo gif (they show the old PenguinBurner UI) are not tracked.
+# The icons the app and packages need, the logo and the new Tux Burner guide screenshots are:
+work/**/*.png
+work/**/*.gif
+work/**/*.jpg
+!work/ui/assets/*.png
+!work/packaging/icons/**/*.png
+!work/docs/assets/tux-burner-logo.png
+!work/docs/user-guide/images/*.png
+!work/docs/assets/hero.png

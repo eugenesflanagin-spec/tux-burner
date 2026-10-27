@@ -1,0 +1,27 @@
+.TH TUX-BURNERD 8 "October 2026" "Tux Burner 0.99" "System Administration"
+.SH NAME
+tux-burnerd \- Tux Burner root hardware service
+.SH DESCRIPTION
+The root daemon that performs every GPU write for Tux Burner (voltage offset, clocks, power cap,
+fan curve) and runs the saved-profile engine. It listens on /run/tux-burnerd.sock and is started as
+.BR tux-burnerd.service .
+Install or repair the service with
+.BR "tburn-cli --install-systemd-service" ;
+remove it with
+.BR "tburn-cli --uninstall-systemd-service" .
+.PP
+On AMD it enforces its own VDDGFX safety floor, independent of the GUI and CLI: default \-150 mV,
+changed through /etc/tux-burner/amd-vddgfx-floor-mv or the environment variable
+TUX_BURNERD_AMD_VDDGFX_FLOOR_MV in the unit.
+.SH FILES
+.TP
+.I /etc/tux-burner/amd-vddgfx-floor-mv
+.TP
+.I /var/lib/tux-burner/
+.TP
+.I /var/opt/tux-burner/libexec/tux-burnerd
+.SH SEE ALSO
+.BR tburn-cli (1)
+.SH AUTHORS
+Tux Burner is Copyright (C) 2026 by Eugene Flanagin. Licensed under GPL-3.0-or-later.
+Based on PenguinBurner by jpietek, GPL-3.0-or-later.

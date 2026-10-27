@@ -1,0 +1,89 @@
+# Steam in Game Library
+
+Native and Flatpak installations share the same integration. When both have a
+configured library, Tux Burner prefers native while its executable is
+available; otherwise it selects Flatpak. Library discovery, settings, Play and
+compatibility tools follow that choice. **Rescan** refreshes it after a launcher
+installation changes. Flatpak games receive a sandbox-local Tux Burner runtime;
+restart the launcher after first enabling wrapping so it receives filesystem access.
+
+Flatpak Steam uses `~/.var/app/com.valvesoftware.Steam/.local/share/Steam`.
+Live settings and Proton selection refuse to connect to a different running
+Steam installation. Close the other client before using these controls.
+
+Use [Game Library](features/game-library.md) to set a GPU profile, Adaptive FPS
+target, and overlay for each Steam game alongside your Lutris, Heroic and Faugus
+libraries.
+
+## Setup
+
+1. Open **Game Library** and click **Scan my Steam library** if prompted.
+2. Restart Steam if the tab shows **Restart Steam to finish**.
+3. Select a game and enable **Wrap this game**.
+4. Choose its mode and other [per-game settings](features/game-library.md#per-game-settings).
+
+Scanning does not change launch options. Enabling a game adds the wrapper to
+that game's options and preserves the existing command. Settings are stored
+per Steam account in `~/.config/TuxBurner/steam-game-settings.json`. If
+that file is ever damaged and cannot be read, Tux Burner keeps it as
+`steam-game-settings.json.corrupt-<timestamp>` beside it and starts a new one,
+so the old presets stay recoverable.
+
+## When edits are available
+
+Steam caches launch options while running. The status line shows how
+Tux Burner can update them:
+
+| Status | Meaning |
+| --- | --- |
+| live apply | Steam is running and connected; edits go through Steam. |
+| Steam stopped | Tux Burner can write the saved options directly. |
+| read-only until initialized | Complete the scan or restart requested beside Rescan. |
+
+Tux Burner detects Steam's live connection on both IPv4 and IPv6 loopback.
+If another local service occupies the IPv4 port, it also checks IPv6 before
+marking Steam read-only.
+
+Mode, target FPS, and overlay visibility can update a running wrapped game.
+Changing **Graphics card** requires a relaunch. Compatibility selection is
+independent of wrapping and is disabled for Steam-confirmed native Linux games
+or while live Steam control is unavailable.
+
+## Launch and restore
+
+Use **Play / Stop** in Game Library or launch normally from Steam. The wrapper
+applies the game profile through the root daemon without an admin prompt.
+When the wrapped session ends, it restores the standing profile. For a different target GPU, it first
+restores that card's saved state, or stock if none is known.
+
+Steam, Lutris, Heroic and Faugus share session tracking. If the wrapper hands off to a
+child process, the game profile remains active until the final tracked process
+exits. Restoration and relaunch no longer wait for a fixed three-second grace.
+If you retry an unconfirmed launch, the library keeps unresolved attempts
+pending; distinct wrapper sessions and their exit events resolve them. A game
+confirmed running while the retry dialog is open cancels that retry.
+
+If the daemon is unavailable, the game still starts. A second concurrent game
+can start too, but its runtime request does not replace the first game's
+monitoring ownership.
+
+For games that start EA app, Ubisoft Connect or another client,
+[fully exit that launcher too](features/game-library.md#games-that-start-another-launcher)
+to return to stopped/Play after quitting the game.
+
+## Manual launch options
+
+For manually managed Steam launch options:
+
+```text
+TUX_BURNER %command%
+```
+
+To show the overlay:
+
+```text
+PB_OVERLAY=1 TUX_BURNER %command%
+```
+
+See [Game Library](features/game-library.md) for bulk actions and graphics-API
+compatibility, or the [overlay guide](features/overlay.md) for HUD controls.

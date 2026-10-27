@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+# Tux Burner change: this script publishes to PenguinBurner's upstream channels (jpietek's
+# GitHub, COPR, PPA, Pages). It must not run from the fork by accident; Tux Burner releases
+# come from .github/workflows/release.yml. Set TUX_BURNER_ALLOW_UPSTREAM_SCRIPTS=1 to run it anyway.
+if [ "${TUX_BURNER_ALLOW_UPSTREAM_SCRIPTS:-}" != 1 ] && [ "${1:-}" != "--help" ] && [ "${1:-}" != "-h" ]; then
+    echo "$0: disabled in Tux Burner (it targets upstream PenguinBurner's release channels)." >&2
+    exit 1
+fi
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+export PYTHONUNBUFFERED=1
+
+ppa="${PPA_TARGET:-ppa:jpietek/penguin-burner}"
+version="${1:-}"
+series_list=("${@:2}")
+debian_revision="${DEBIAN_REVISION:-1}"
+dput_profile_dir=""
+dput_profile_backup=""
+status_helper="$ROOT/scripts/launchpad_ppa.py"
+
+if [ -z "$version" ]; then
+    version="$(
+        python3 - <<'PY'
+import tomllib
+from pathlib import Path
+
+metadata = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+print(metadata["project"]["version"])
+PY
+    )"
+fi
+
+if [ "${#series_list[@]}" -eq 0 ]; then
+    series_list=(resolute)
+fi
+
+for command in cargo dpkg-buildpackage dput git gpg python3; do
+    command -v "$command" >/dev/null 2>&1 \
+        || { echo "missing required command: $command" >&2; exit 1; }
+done
+scripts/check-release-version.sh "$version" >/dev/null
+git rev-parse --verify "v${version}^{commit}" >/dev/null \
+    || { echo "release tag does not exist: v${version}" >&2; exit 1; }
+if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
+    echo "PPA publication requires a clean checkout" >&2
+    git status --short >&2
+    exit 1
+fi
+git check-ignore -q dist/deb \
+    || { echo "dist/deb must remain ignored by Git" >&2; exit 1; }
+
+tracked_artifacts="$(
+    git ls-files | grep -E '(^|/)(vendor|target|dist|build)/|\.(deb|dsc|changes|buildinfo|whl|so|dll|src\.rpm)$' || true
+)"
+if [ -n "$tracked_artifacts" ]; then
+    echo "generated build artifacts must not be tracked by Git:" >&2
+    printf '%s\n' "$tracked_artifacts" >&2
+    exit 1
+fi
+
+new_series=()
+for series in "${series_list[@]}"; do
+    status=0
+    python3 "$status_helper" exists "$version" "$debian_revision" "$series" || status=$?
+    case "$status" in
+        0) echo "$series: source already accepted; resuming build monitoring" ;;
+        3) new_series+=("$series") ;;
+        *) exit "$status" ;;
+    esac
+done
+
+wait_for_builds() {
+    python3 "$status_helper" wait \
+        "$version" "$debian_revision" "${series_list[@]}" \
+        --timeout "${PPA_WAIT_TIMEOUT_S:-10800}" \
+        --poll "${PPA_POLL_INTERVAL_S:-30}"
+}
+
+if [ "${#new_series[@]}" -eq 0 ]; then
+    wait_for_builds
+    exit
+fi
+
+"$ROOT/scripts/release-gpg.sh" --check \
+    "${DEBSIGN_KEYID:-B098E377E3C3C124A009E54093CEE10EDB7F01A2}"
+
+# Check credentials before the expensive build, then validate the supported
+# Ubuntu package before uploading it to Launchpad.
+if [ "${TUX_BURNER_SKIP_PACKAGE_SMOKE:-0}" != 1 ]; then
+    "$ROOT/scripts/check-ubuntu-package-build.sh" resolute
+fi
+
+cleanup() {
+    profile="$HOME/.dput.d/profiles/penguin-ppa.json"
+    if [ -n "$dput_profile_backup" ]; then
+        cp "$dput_profile_backup" "$profile"
+    else
+        rm -f "$profile"
+    fi
+    if [ -n "$dput_profile_dir" ]; then
+        rm -rf "$dput_profile_dir"
+    fi
+}
+trap cleanup EXIT
+
+if [ "$ppa" = "ppa:jpietek/penguin-burner" ]; then
+    # The host's distro-info data may lag the currently supported Ubuntu series.
+    # Use a local dput-ng profile without the supported-distribution hook while
+    # keeping checksum, suite, and GPG checks.
+    dput_profile_dir="$(mktemp -d)"
+    mkdir -p "$dput_profile_dir/profiles"
+    cat > "$dput_profile_dir/profiles/penguin-ppa.json" <<'JSON'
+{
+  "fqdn": "ppa.launchpad.net",
+  "incoming": "~jpietek/ubuntu/penguin-burner/",
+  "login": "anonymous",
+  "meta": "boring",
+  "method": "ftp",
+  "passive_ftp": true
+}
+JSON
+    mkdir -p "$HOME/.dput.d/profiles"
+    if [ -f "$HOME/.dput.d/profiles/penguin-ppa.json" ]; then
+        dput_profile_backup="$dput_profile_dir/original-penguin-ppa.json"
+        cp "$HOME/.dput.d/profiles/penguin-ppa.json" "$dput_profile_backup"
+    fi
+    cp "$dput_profile_dir/profiles/penguin-ppa.json" "$HOME/.dput.d/profiles/penguin-ppa.json"
+    ppa="penguin-ppa"
+fi
+
+changes_files=()
+for series in "${new_series[@]}"; do
+    scripts/build-deb-source.sh "$series" "$version" "$debian_revision"
+    changes="$(find "dist/deb/${series}" -maxdepth 1 -name "*_${version}-${debian_revision}~ppa1~${series}1_source.changes" -print -quit)"
+    if [ -z "$changes" ]; then
+        echo "source changes file not found for ${series}" >&2
+        exit 1
+    fi
+    changes_files+=("$changes")
+done
+
+if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
+    echo "source packaging unexpectedly changed tracked or unignored files" >&2
+    git status --short >&2
+    exit 1
+fi
+
+for changes in "${changes_files[@]}"; do
+    dput "$ppa" "$changes"
+done
+
+wait_for_builds

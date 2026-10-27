@@ -1,0 +1,234 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tux-burner"
+version = "0.99"
+description = "Tux Burner: GPU undervolting, overclocking and per-game tuning for Linux (AMD amdgpu and NVIDIA). Fork of PenguinBurner by jpietek"
+requires-python = ">=3.11"
+dynamic = ["readme"]
+license = { file = "LICENSE" }
+authors = [
+  { name = "Eugene Flanagin" },
+  { name = "PenguinBurner contributors (upstream)" },
+]
+keywords = [
+  "nvidia",
+  "amd",
+  "amdgpu",
+  "undervolting",
+  "overclocking",
+  "adaptive",
+  "linux",
+  "gpu",
+  "steam",
+  "lutris",
+  "heroic",
+  "faugus",
+  "overlay",
+  "q2rtx",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Hardware",
+]
+dependencies = [
+  "PySide6-Essentials>=6.7",
+  "PyYAML>=6.0",
+  "colorama>=0.4",
+  "pyqtgraph>=0.13",
+]
+
+[project.optional-dependencies]
+ui = [
+  # Compatibility alias for older docs/users. GUI dependencies are installed by
+  # the base package too, so plain `pip install tux-burner` is enough.
+  "PySide6-Essentials>=6.7",
+  "colorama>=0.4",
+  "pyqtgraph>=0.13",
+]
+test = [
+  # What `python -m pytest tests/` needs beyond the runtime dependencies.
+  # pytest-qt supplies the qapp/qtbot fixtures the GUI tests build windows on;
+  # without it those tests do not fail, they error at setup with
+  # "fixture 'qapp' not found", which reads like a broken checkout.
+  "pytest>=8",
+  "pytest-qt>=4.4",
+  # The sdist test invokes setup.py outside pip's isolated build environment.
+  "setuptools>=69",
+  "wheel",
+]
+
+[project.urls]
+Homepage = "https://github.com/eugenesflanagin-spec/tux-burner"
+Issues = "https://github.com/eugenesflanagin-spec/tux-burner/issues"
+Source = "https://github.com/eugenesflanagin-spec/tux-burner"
+Upstream = "https://github.com/jpietek/PenguinBurner"
+
+[project.scripts]
+tux-burner = "ui.main:main"
+tburn = "ui.main:main"
+tux-burner-cli = "tux_burner:cli_main"
+tburn-cli = "tux_burner:cli_main"
+TUX_BURNER = "overlay.launcher:main"
+tux-burner-install-wrappers = "common.flatpak_wrappers:main"
+
+[tool.setuptools]
+py-modules = [
+  "tux_burner",
+]
+packages = [
+  "auto_uv",
+  "auto_uv.auto_oc",
+  "auto_uv.curve",
+  "auto_uv.domain",
+  "auto_uv.efficiency_tune",
+  "auto_uv.final_verification",
+  "auto_uv.gpu",
+  "auto_uv.initial_check",
+  "auto_uv.persistence",
+  "auto_uv.probes",
+  "auto_uv.run",
+  "auto_uv.scan_mode",
+  "auto_uv.shared",
+  "stability",
+  "stability.q2rtx",
+  "ui.features.auto_uv",
+  "cli",
+  "common",
+  "curve_editors",
+  "curve_editors.fan",
+  "curve_editors.uv",
+  "integrations",
+  "integrations.afterburner",
+  "integrations.faugus",
+  "integrations.heroic",
+  "integrations.lact",
+  "integrations.launchers",
+  "integrations.lutris",
+  "integrations.steam",
+  "drivers",
+  "drivers.amdgpu",
+  "drivers.nvidia",
+  "overlay",
+  "overlay.telemetry",
+  "runtime",
+  "runtime.support",
+  "runtime.gpu_control",
+  "profiles",
+  "profiles.verification",
+  "profiles.uv",
+  "ui",
+  "ui.assets",
+  "ui.components",
+  "ui.controllers",
+  "ui.dialogs",
+  "ui.features",
+  "ui.features.curves",
+  "ui.features.integrations",
+  "ui.features.profiles",
+  "ui.features.tuning",
+]
+
+[tool.setuptools.package-data]
+"overlay" = [
+  "native_layer/*.json",
+  "native_layer/*.so",
+  "nvapi_shim/*.dll",
+]
+"runtime" = [
+  # Compiled root daemon staged by setup.py build_py; the elevated install
+  # step copies it to /var/opt/tux-burner/libexec/tux-burnerd.
+  "daemon_bin/tux-burnerd",
+]
+"ui.assets" = [
+  "*.png",
+]
+
+[tool.setuptools.data-files]
+"share/tux-burner" = [
+  "tux_burner.sh",
+]
+"share/applications" = [
+  "packaging/linux/io.github.eugenesflanagin_spec.TuxBurner.desktop",
+]
+"share/icons/hicolor/256x256/apps" = [
+  "packaging/icons/hicolor/256x256/apps/tux-burner.png",
+]
+"share/icons/hicolor/512x512/apps" = [
+  "packaging/icons/hicolor/512x512/apps/tux-burner.png",
+]
+
+[tool.pytest.ini_options]
+# Keep collection inside our own suite; never walk vendored third_party/ trees.
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+required-version = "==0.16.8"
+
+[tool.ruff.lint]
+# Keep the static-analysis policy in the repository instead of inheriting
+# whichever default rule set happens to ship with the installed Ruff version.
+select = [
+  "E4",
+  "E7",
+  "E9",
+  "F",
+  "I",
+  "UP",
+  "B",
+  "SIM",
+  "BLE001",
+  "C401",
+  "DTZ005",
+  "EXE001",
+  "FLY002",
+  "FURB188",
+  "FURB192",
+  "ISC004",
+  "PIE810",
+  "PLR0402",
+  "PLR1711",
+  "PLR1730",
+  "PLW0602",
+  "PLW1509",
+  "PYI034",
+  "PYI041",
+  "RET501",
+  "RUF007",
+  "RUF010",
+  "RUF012",
+  "RUF023",
+  "RUF034",
+  "RUF046",
+  "RUF100",
+  "S110",
+  "S112",
+  "TRY004",
+]
+# These broad-family rules were not part of the audited baseline and would add
+# unrelated findings merely by making the policy explicit.
+ignore = ["B905", "SIM105", "UP042"]
+
+[tool.ruff.lint.flake8-bugbear]
+# These constructors produce frozen, slotted settings values that are safe to
+# share as function defaults.
+extend-immutable-calls = [
+  "auto_uv.curve.base_load_flatten_target.CurveTiming",
+  "auto_uv.curve.base_load_telemetry.LoadedTelemetryRules",
+  "auto_uv.curve.vf_curve_flattening.FlatteningRules",
+  "auto_uv.probes.stability_decision.StabilityThresholds",
+  "auto_uv.run.lower_voltage_probe_target.LowerVoltageProbeTargetRules",
+  "auto_uv.run.lower_voltage_search.LowerVoltageSearchRules",
+  "auto_uv.scan_mode.efficiency_fps_per_w_policy.EfficiencyPolicyRules",
+]

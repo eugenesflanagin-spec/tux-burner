@@ -1,0 +1,1367 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Tux Burner User Guide</title><style>
+@page { size: A4; margin: 18mm 16mm 20mm 16mm;
+  @bottom-center { content: "Tux Burner User Guide  ·  page " counter(page); font: 9pt 'Noto Sans', sans-serif; color: #666; } }
+body { font-family: 'Noto Sans', 'DejaVu Sans', sans-serif; font-size: 10pt; line-height: 1.5; color: #1a1a1a; }
+h1 { font-size: 24pt; color: #0b4f8a; border-bottom: 2px solid #0b4f8a; padding-bottom: 4px; }
+h2 { font-size: 18pt; color: #0b4f8a; margin-top: 1.4em; }
+h3 { font-size: 14pt; color: #134; margin-top: 1.2em; }
+h4 { font-size: 12pt; }
+h1, h2, h3, h4 { break-after: avoid; }
+section.doc { break-before: page; }
+a { color: #0b5cad; text-decoration: none; }
+code { font-family: 'DejaVu Sans Mono', monospace; font-size: 9.5pt; background: #f2f4f7; padding: 0 2px; }
+pre { background: #f2f4f7; padding: 8px; font-size: 9pt; white-space: pre-wrap; word-break: break-all; border-left: 3px solid #0b4f8a; }
+pre code { background: none; }
+table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 0.6em 0; }
+th, td { border: 1px solid #c8ced6; padding: 3px 5px; vertical-align: top; word-break: break-word; }
+th { background: #e6edf5; }
+img { max-width: 100%; border: 1px solid #ccc; }
+blockquote { border-left: 4px solid #e0a800; background: #fff8e1; margin: 0.6em 0; padding: 4px 10px; }
+.cover { text-align: center; padding-top: 70mm; }
+.cover h1 { border: none; font-size: 32pt; }
+.toc li { margin: 3px 0; }
+.toc a::after { content: leader('.') target-counter(attr(href), page); }
+</style></head><body>
+<div class="cover"><h1>Tux Burner</h1>
+<p style="font-size:14pt">User guide, command-line reference and glossary &middot; version 0.99</p>
+<p style="font-size:11pt; margin: 30mm 20mm 0 20mm">Tux Burner is Copyright (C) 2026 by Eugene Flanagin. Licensed under GPL-3.0-or-later.<br>
+Tux Burner is a fork of PenguinBurner by jpietek (https://github.com/jpietek/PenguinBurner), GPL-3.0-or-later.
+It is an independent fork, not endorsed by or affiliated with the author of PenguinBurner.<br>
+Tested on one PC only (Ryzen 7 7800X3D + Radeon RX 9070 XT): other GPUs may have bugs.</p></div>
+<section class="doc"><h1>Contents</h1><ol class="toc"><li><a href="#user-guide">Tux Burner - User Guide</a></li><li><a href="#cli-reference">Tux Burner - Command-line reference</a></li><li><a href="#glossary">Tux Burner - Glossary</a></li></ol></section>
+<section class="doc" id="user-guide">
+<h1 id="user-guide--tux-burner---user-guide">Tux Burner - User Guide</h1>
+<p>Version 0.99. Package <code>tux-burner</code>. Programs:
+<code>tux-burner</code> (also <code>tburn</code>),
+<code>tux-burner-cli</code> (also <code>tburn-cli</code>), and the root
+service <code>tux-burnerd</code>.</p>
+<p>Tux Burner lets you run your graphics card on <strong>less power with
+the same speed</strong> (undervolting), or a little faster
+(overclocking), and saves the settings as profiles. It works on
+<strong>AMD Radeon</strong> cards through the amdgpu driver (tested on a
+Radeon RX 9070 XT) and on NVIDIA cards through the original
+PenguinBurner code.</p>
+<blockquote>
+<p><strong>Credit.</strong> Tux Burner is Copyright (C) 2026 by Eugene
+Flanagin. Licensed under GPL-3.0-or-later.</p>
+<p>Tux Burner is a fork of <strong>PenguinBurner</strong> by
+<strong>jpietek</strong> (<a
+href="https://github.com/jpietek/PenguinBurner">https://github.com/jpietek/PenguinBurner</a>),
+GPL-3.0-or-later. The windows, the Auto-UV search, the adaptive per-game
+runtime, the Game Library, the overlay and the daemon's profile engine
+are the upstream author's work. This fork adds the AMD backend and
+renames the program. All upstream licence notices are kept.</p>
+<p><strong>Not affiliated.</strong> Tux Burner is an independent fork.
+It is not endorsed by or affiliated with the author of PenguinBurner.
+Please report Tux Burner problems to <a
+href="https://github.com/eugenesflanagin-spec/tux-burner/issues">https://github.com/eugenesflanagin-spec/tux-burner/issues</a>,
+not to upstream.</p>
+<p><strong>Tested on one PC.</strong> Tux Burner's AMD side was tested
+only on a Ryzen 7 7800X3D with a Radeon RX 9070 XT. Other AMD
+generations, and the NVIDIA backend in this fork, may have bugs. If you
+find one, please open an issue with your hardware and the report.</p>
+</blockquote>
+<p>Other pages:</p>
+<ul>
+<li><a href="#cli-reference">CLI-REFERENCE.md</a> - every command-line
+option.</li>
+<li><a href="#glossary">GLOSSARY.md</a> - every technical word, in
+plain English.</li>
+<li><a href="#amd">../amd.md</a> - the AMD design notes (what maps
+to what in sysfs).</li>
+</ul>
+<hr />
+<h2 id="user-guide--contents">Contents</h2>
+<ol type="1">
+<li><a href="#user-guide--1-what-it-is-in-plain-words">What it is, in plain
+words</a></li>
+<li><a href="#user-guide--2-read-this-first-safety">Read this first: safety</a></li>
+<li><a href="#user-guide--3-install">Install</a></li>
+<li><a href="#user-guide--4-first-run">First run</a></li>
+<li><a href="#user-guide--5-the-window-page-by-page">The window, page by
+page</a></li>
+<li><a href="#user-guide--6-the-safety-floors">The safety floors</a></li>
+<li><a href="#user-guide--7-lact-and-tux-burner">LACT and Tux Burner</a></li>
+<li><a href="#user-guide--8-the-auto-uv-ladder">The Auto-UV ladder</a></li>
+<li><a href="#user-guide--9-profiles">Profiles</a></li>
+<li><a href="#user-guide--10-command-line">Command line</a></li>
+<li><a href="#user-guide--11-files-and-settings">Files and settings</a></li>
+<li><a href="#user-guide--12-moving-from-penguinburner-or-penguin-burner-amd">Moving
+from PenguinBurner or penguin-burner-amd</a></li>
+<li><a href="#user-guide--13-troubleshooting">Troubleshooting</a></li>
+<li><a href="#user-guide--14-uninstall">Uninstall</a></li>
+<li><a href="#user-guide--15-credits">Credits</a></li>
+<li><a href="#user-guide--16-glossary">Glossary</a></li>
+</ol>
+<hr />
+<h2 id="user-guide--1-what-it-is-in-plain-words">1. What it is, in plain words</h2>
+<p>A graphics card is given more voltage than most chips need.
+<strong>Undervolting</strong> lowers the voltage a little. The card then
+uses less power, runs cooler and quieter, and (if you did not go too
+far) is just as fast. Go too far and the card becomes
+<strong>unstable</strong>: the picture glitches, the driver resets, or
+the whole PC freezes.</p>
+<p>Tux Burner does three jobs:</p>
+<ol type="1">
+<li><strong>Shows</strong> what your GPU is doing (voltage offset,
+clocks, power limit, temperatures, fan).</li>
+<li><strong>Changes</strong> those settings, but only when you press a
+button and confirm, and always inside limits it checks first.</li>
+<li><strong>Searches</strong> for a good setting for you (the
+<em>Auto-UV ladder</em>): it lowers the voltage one small step at a
+time, runs a stress test at each step, and remembers the deepest step
+that passed.</li>
+</ol>
+<p>On an AMD card there is <strong>one</strong> voltage knob (a global
+offset in millivolts), one core-clock offset, a memory-clock limit, a
+power cap and a fan curve. On NVIDIA there is a whole voltage/frequency
+curve, which is why the NVIDIA search is more complicated.</p>
+<h3 id="user-guide--who-it-is-for">Who it is for</h3>
+<ul>
+<li>Owners of an AMD Radeon (RDNA 3 / RDNA 4 with the amdgpu driver) who
+want a quieter or cooler card.</li>
+<li>People who already use PenguinBurner on NVIDIA and want to try the
+fork.</li>
+</ul>
+<h3 id="user-guide--what-it-is-not">What it is not</h3>
+<ul>
+<li>It is not a benchmark. It is not a replacement for
+<strong>LACT</strong>; the two can live together (see <a
+href="#user-guide--7-lact-and-tux-burner">LACT and Tux Burner</a>).</li>
+<li>It is not tested on your card. Every GPU is different. Start
+small.</li>
+</ul>
+<hr />
+<h2 id="user-guide--2-read-this-first-safety">2. Read this first: safety</h2>
+<ul>
+<li><strong>Nothing is written to the GPU until you press a button and
+confirm.</strong> The window opens in a read-only state. <em>Preview
+writes (dry run)</em> shows what would be written and writes
+nothing.</li>
+<li>A <strong>bad undervolt can freeze the PC</strong> or force a reset.
+Save your work first. Test on a PC you can reboot.</li>
+<li><strong>Sustained load.</strong> <em>Stress test</em> and the
+<em>Auto-UV ladder</em> run a heavy GPU load for minutes. Do not run
+them unattended, and watch the temperatures.</li>
+<li>Tux Burner has two <strong>safety floors</strong> for the voltage
+offset: how deep it is allowed to go. The default is <strong>-150
+mV</strong>. The suggested settings it offers never go deeper than
+<strong>-110 mV</strong>. See <a href="#user-guide--6-the-safety-floors">The safety
+floors</a>.</li>
+<li>If LACT is running, <strong>LACT owns the GPU.</strong> Tux Burner
+will refuse to write unless you say <code>--override-lact</code>.</li>
+<li>You run hardware tuning at your own risk. See also
+<code>SECURITY.md</code>.</li>
+</ul>
+<hr />
+<h2 id="user-guide--3-install">3. Install</h2>
+<h3 id="user-guide--arch-linux-cachyos-and-other-arch-based-systems">Arch Linux,
+CachyOS and other Arch-based systems</h3>
+<p>From a release (see the Releases page of the repository):</p>
+<div class="sourceCode" id="user-guide--cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb1-1"><a href="#user-guide--cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-U</span> tux-burner-0.99-1-x86_64.pkg.tar.zst</span></code></pre></div>
+<p>The package <code>provides</code> and <code>conflicts</code> with
+<code>penguin-burner</code> and <code>penguin-burner-amd</code> and
+<code>replaces</code> <code>penguin-burner-amd</code>, so it takes over
+from either. Build it yourself from the source tree:</p>
+<div class="sourceCode" id="user-guide--cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb2-1"><a href="#user-guide--cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/eugenesflanagin-spec/tux-burner</span>
+<span id="user-guide--cb2-2"><a href="#user-guide--cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> penguin-burner-amd</span>
+<span id="user-guide--cb2-3"><a href="#user-guide--cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout v0.99          <span class="co"># or the branch you want</span></span>
+<span id="user-guide--cb2-4"><a href="#user-guide--cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">packaging/build-arch-local.sh</span></span>
+<span id="user-guide--cb2-5"><a href="#user-guide--cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-U</span> /path/shown/at/the/end/tux-burner-0.99-1-x86_64.pkg.tar.zst</span></code></pre></div>
+<h3 id="user-guide--debian-ubuntu-fedora-opensuse">Debian, Ubuntu, Fedora,
+openSUSE</h3>
+<p>Each release also has a <code>.deb</code> and a <code>.rpm</code>
+file, a SHA256SUMS file and this guide as a PDF. These are built by the
+release workflow; they have been tried less than the Arch package, so
+please report problems.</p>
+<div class="sourceCode" id="user-guide--cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb3-1"><a href="#user-guide--cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install ./tux-burner_0.99-1_amd64.deb     <span class="co"># Debian / Ubuntu</span></span>
+<span id="user-guide--cb3-2"><a href="#user-guide--cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install ./tux-burner-0.99-1.x86_64.rpm    <span class="co"># Fedora</span></span></code></pre></div>
+<p>Check the download first:
+<code>sha256sum -c SHA256SUMS --ignore-missing</code>.</p>
+<h3 id="user-guide--what-you-need-besides-the-package">What you need besides the
+package</h3>
+<ul>
+<li>The <strong>amdgpu</strong> kernel driver with OverDrive enabled (on
+most distributions the kernel option
+<code>amdgpu.ppfeaturemask=0xffffffff</code> is needed to see
+<code>pp_od_clk_voltage</code>). Without it Tux Burner can show values
+but cannot change them.</li>
+<li>For the stress test: an <strong>OpenCL</strong> driver
+(<code>rocm-opencl-runtime</code>, or Mesa's rusticl).</li>
+<li>Optional: <strong>LACT</strong>, <strong>RADV</strong>
+(<code>vulkan-radeon</code>).</li>
+</ul>
+<h3 id="user-guide--the-root-service-once">The root service (once)</h3>
+<p>Changing GPU settings needs root. Tux Burner does that with one small
+root service, <code>tux-burnerd</code>. Install it once, as your normal
+user:</p>
+<div class="sourceCode" id="user-guide--cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb4-1"><a href="#user-guide--cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--install-systemd-service</span></span></code></pre></div>
+<p>It asks for your password (pkexec or sudo), installs and starts
+<code>tux-burnerd.service</code>. From then on the window and the
+command line talk to it over a local socket with no more password
+prompts. A fresh service applies <strong>nothing</strong> on start: it
+waits for you.</p>
+<hr />
+<h2 id="user-guide--4-first-run">4. First run</h2>
+<ol type="1">
+<li>Start <strong>Tux Burner</strong> from the menu (or run
+<code>tux-burner</code>).</li>
+<li>The window opens on the <strong>AMD Tuning</strong> tab. On the
+left, <em>Live status</em> shows your card: its name, the current VDDGFX
+offset, SCLK offset, MCLK max, power cap, temperatures, clocks, fan,
+whether LACT is running, and the two safety floors.</li>
+</ol>
+<p><img src="images/amd-tuning.png" alt="The AMD Tuning page" /></p>
+<ol start="3" type="1">
+<li>In a terminal, check the same thing without the window:</li>
+</ol>
+<div class="sourceCode" id="user-guide--cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb5-1"><a href="#user-guide--cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-status</span></span></code></pre></div>
+<ol start="4" type="1">
+<li>Try a <strong>dry run</strong>. On the right, change <em>VDDGFX
+offset</em> to a small value such as -50 mV and press <strong>Preview
+writes (dry run)</strong>. The text at the bottom lists exactly what
+would be written, and says "nothing was written".</li>
+</ol>
+<p><img src="images/amd-preview.png" alt="A dry-run preview" /></p>
+<ol start="5" type="1">
+<li>Only when you are happy: <strong>Apply...</strong>, read the
+confirmation, and confirm.</li>
+</ol>
+<p>If the page says "daemon floor unknown (tux-burnerd not reachable)",
+the root service is not running. Install it as shown above.</p>
+<hr />
+<h2 id="user-guide--5-the-window-page-by-page">5. The window, page by page</h2>
+<p>The top bar shows the state (<strong>Idle</strong> / running), a
+one-line message, the big <strong>AMD Auto-UV ladder</strong> button,
+<strong>Stop</strong>, and <strong>About</strong>. The tabs are
+<strong>AMD Tuning</strong>, <strong>Auto-UV</strong>,
+<strong>Profiles</strong>, <strong>Game Library</strong> and
+<strong>In-Game Overlay</strong>.</p>
+<h3 id="user-guide--51-amd-tuning">5.1 AMD Tuning</h3>
+<p><strong>Live status</strong> (read from sysfs every 2 seconds,
+read-only):</p>
+<table>
+<thead>
+<tr>
+<th>Row</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPU</td>
+<td>Name, PCI address and an id derived from the card.</td>
+</tr>
+<tr>
+<td>VDDGFX offset</td>
+<td>The voltage offset in mV now, and the range the driver allows.
+Negative means undervolt.</td>
+</tr>
+<tr>
+<td>SCLK offset</td>
+<td>Core clock offset in MHz, and its range.</td>
+</tr>
+<tr>
+<td>MCLK max</td>
+<td>The memory clock ceiling, and the stock value for comparison.</td>
+</tr>
+<tr>
+<td>Power cap</td>
+<td>The power limit in watts, with the minimum, maximum and default the
+card reports.</td>
+</tr>
+<tr>
+<td>Temperatures</td>
+<td>Edge and junction (hot spot). The fan curve uses the junction.</td>
+</tr>
+<tr>
+<td>Live</td>
+<td>Core clock, memory clock, voltage, power and busy percent right
+now.</td>
+</tr>
+<tr>
+<td>Fan</td>
+<td>Fan speed and the card's 5-point fan curve.</td>
+</tr>
+<tr>
+<td>LACT</td>
+<td>Whether LACT is running and what it has configured.</td>
+</tr>
+<tr>
+<td>Safety floors</td>
+<td>The app floor and the daemon floor (they must match).</td>
+</tr>
+<tr>
+<td>Daemon</td>
+<td>What <code>tux-burnerd</code> reports.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Plan</strong> (what you want to set):</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VDDGFX offset</td>
+<td>Voltage offset in mV. Cannot go below the safety floor.</td>
+</tr>
+<tr>
+<td>SCLK offset</td>
+<td>Core clock offset in MHz.</td>
+</tr>
+<tr>
+<td>MCLK max (set)</td>
+<td>Tick to set an absolute memory clock ceiling.</td>
+</tr>
+<tr>
+<td>Power cap (set)</td>
+<td>Tick to set the power limit in watts.</td>
+</tr>
+<tr>
+<td>Voltage floor / Allow going below</td>
+<td>Unlocks the floor spin box. A warning appears. See <a
+href="#user-guide--6-the-safety-floors">safety floors</a>.</td>
+</tr>
+<tr>
+<td>Durations</td>
+<td>Seconds for the Stress test, and seconds per rung for the
+ladder.</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/amd-below-floor.png"
+alt="Allowing a deeper floor shows a warning" /></p>
+<p><strong>Buttons:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preview writes (dry run)</td>
+<td>Shows the exact writes. Writes nothing.</td>
+</tr>
+<tr>
+<td>Apply...</td>
+<td>After a confirmation, writes the plan through the root service. With
+LACT running you first choose <em>Export to LACT</em>, <em>Override
+LACT</em> or <em>Cancel</em>.</td>
+</tr>
+<tr>
+<td>Save as profile...</td>
+<td>Saves the plan as a Tux Burner profile (see <a
+href="#user-guide--9-profiles">Profiles</a>).</td>
+</tr>
+<tr>
+<td>Export to LACT...</td>
+<td>Writes the plan as a LACT configuration block you can paste into
+LACT's config.</td>
+</tr>
+<tr>
+<td>Stress test...</td>
+<td>Runs the OpenCL stress workload for the chosen seconds, after a
+confirmation. Heavy load.</td>
+</tr>
+<tr>
+<td>Auto-UV ladder: preview</td>
+<td>The first click previews the rungs; the second asks for confirmation
+and runs.</td>
+</tr>
+<tr>
+<td>Load current values</td>
+<td>Puts the card's present values back into the editor.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ladder runs (history)</strong>: every ladder run (from the
+window or the command line) is listed with its settings, floors, result
+and deepest stable rung. <em>Show run in the Auto-UV graph</em> plots
+it; <em>Open log</em> opens the log.</p>
+<h3 id="user-guide--52-auto-uv">5.2 Auto-UV</h3>
+<p>The upstream NVIDIA Auto-UV page, with the live Clock-vs-Voltage
+graph. On AMD the graph shows each ladder rung's operating point,
+coloured by result. The <em>Start</em> button is replaced by <em>AMD
+Auto-UV ladder</em>.</p>
+<p><img src="images/tab-auto-uv.png" alt="The Auto-UV page" /></p>
+<h3 id="user-guide--53-profiles">5.3 Profiles</h3>
+<p>Saved profiles, including AMD ones: name, tier, the AMD columns
+(voltage offset, core offset, memory, power), apply, rename, export to
+LACT, delete, and <strong>Restore Defaults</strong>. On AMD, Restore
+Defaults offers <em>Return to LACT's settings</em> (asks
+<code>lactd</code> to re-apply its profile; no restart) or <em>Driver
+stock defaults</em> (through the root service, with before/after
+readback).</p>
+<p><img src="images/tab-profiles.png" alt="The Profiles page" /></p>
+<h3 id="user-guide--54-game-library">5.4 Game Library</h3>
+<p>The upstream per-game feature: Steam, Lutris, Heroic and Faugus
+games, each with its own tuning and overlay switch. Per-game profile
+switching was written for NVIDIA; on AMD only saved AMD profiles can be
+applied, and this part has had less testing.</p>
+<p><img src="images/tab-game-library.png"
+alt="The Game Library page" /></p>
+<h3 id="user-guide--55-in-game-overlay">5.5 In-Game Overlay</h3>
+<p>The upstream Vulkan overlay layer (frame rate, GPU numbers, optional
+latency). It is independent of the AMD tuning code.</p>
+<p><img src="images/tab-in-game-overlay.png"
+alt="The In-Game Overlay page" /></p>
+<h3 id="user-guide--56-about">5.6 About</h3>
+<p><em>About</em> shows the version, the fork notice, the upstream link
+and where to report problems.</p>
+<p><img src="images/about.png" alt="The About window" /></p>
+<hr />
+<h2 id="user-guide--6-the-safety-floors">6. The safety floors</h2>
+<p>A <strong>floor</strong> is the deepest VDDGFX offset that will be
+allowed. There are two, on purpose, so that a bug in one cannot cause a
+deep undervolt:</p>
+<table>
+<thead>
+<tr>
+<th>Floor</th>
+<th>Where it lives</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>App floor</strong></td>
+<td>The window and <code>tburn-cli</code> (plan checks, the
+ladder).</td>
+<td>-150 mV</td>
+</tr>
+<tr>
+<td><strong>Daemon floor</strong></td>
+<td>The root service. It refuses any deeper write no matter who
+asks.</td>
+<td>-150 mV</td>
+</tr>
+</tbody>
+</table>
+<p>How they behave:</p>
+<ul>
+<li>The default is <strong>-150 mV</strong>. The card itself may allow
+-200 mV; Tux Burner stops earlier.</li>
+<li><strong>Suggested</strong> settings (the three tiers a ladder saves,
+presets, restore points) never go deeper than <strong>-110 mV</strong>,
+even though the ladder may <em>test</em> down to the floor.</li>
+<li>To go deeper on purpose you must do two things: raise the app floor
+(<code>--amd-voltage-floor MV --allow-below-floor</code>, or tick
+<em>Allow going below the safety floor</em> in the window)
+<strong>and</strong> lower the daemon floor
+(<code>tburn-cli --amd-set-daemon-floor MV --allow-below-floor</code>,
+or confirm the window's dialog, which does it for you). Until both
+match, <em>Apply</em> and the ladder are blocked in the window, so no
+rung is refused halfway and mistaken for a failure.</li>
+<li>The daemon's floor lives in
+<code>/etc/tux-burner/amd-vddgfx-floor-mv</code>. The environment
+variable <code>TUX_BURNERD_AMD_VDDGFX_FLOOR_MV</code> in the service's
+unit pins it instead (then the file is ignored and the window says
+so).</li>
+<li>Untick <em>Allow going below</em> (or run
+<code>--amd-set-daemon-floor default</code>) to return to -150 mV.</li>
+</ul>
+<p>The floors limit the voltage offset only. The SCLK offset, memory
+clock and power cap are always checked against the ranges the driver
+reports.</p>
+<hr />
+<h2 id="user-guide--7-lact-and-tux-burner">7. LACT and Tux Burner</h2>
+<p><strong>LACT</strong> is a well-known Linux control panel for AMD
+GPUs. If its service (<code>lactd</code>) is running, <strong>LACT owns
+the GPU's tuning and its fan curve</strong>, and it re-applies its own
+settings from time to time.</p>
+<p>What Tux Burner does about it:</p>
+<ul>
+<li>It detects LACT (the service is active, or its socket exists and a
+<code>lact</code> process runs) and shows the result and LACT's
+configured values in the window.</li>
+<li><code>--amd-apply</code> and <code>--amd-auto-uv</code>
+<strong>refuse</strong> while LACT runs, unless you add
+<code>--override-lact</code>. In the window, <em>Apply</em> then offers
+<em>Export to LACT</em> (the preferred way), <em>Override LACT</em>
+(with a warning) or <em>Cancel</em>.</li>
+<li>It never touches the fan curve while LACT runs.</li>
+<li><code>--amd-export-lact</code> writes your plan as a LACT
+<code>gpus:</code> block (voltage_offset, gpu_clock_offsets,
+max_memory_clock, power_cap and a curve of up to five points) so LACT
+can carry the setting. Put it in LACT's config yourself.</li>
+<li><strong>Never restart <code>lactd</code> on a live desktop to pick
+up a change.</strong> Use LACT's own profile switching
+(<code>lact cli profile set &lt;name&gt;</code>) or reboot.</li>
+</ul>
+<p>With <code>--override-lact</code>, LACT's own settings come back the
+next time LACT applies them. Restore LACT's values with <em>Return to
+LACT's settings</em> (Profiles &gt; Restore Defaults) or
+<code>tburn-cli --amd-restore lact</code>.</p>
+<hr />
+<h2 id="user-guide--8-the-auto-uv-ladder">8. The Auto-UV ladder</h2>
+<p>On NVIDIA, Auto-UV searches a whole curve. On AMD there is a single
+voltage offset, so the search is a <strong>ladder</strong>:</p>
+<ol type="1">
+<li>Start at 0 mV (stock) and go down in steps of 10 mV
+(<code>--amd-auto-uv-step</code>).</li>
+<li>At each <strong>rung</strong>, apply the offset and run the OpenCL
+stress workload for 60 seconds
+(<code>--amd-auto-uv-rung-seconds</code>). The workload checks its own
+results; a wrong answer, a driver error, a hang or a crash fails the
+rung.</li>
+<li>Stop at the first failure or at the floor.</li>
+<li>The deepest rung that passed, <strong>plus a 20 mV margin</strong>
+(<code>--amd-auto-uv-margin</code>), becomes three saved profiles:
+<strong>Efficiency</strong> (stock power cap), <strong>Balanced</strong>
+(the cap that was in force when the scan started) and
+<strong>Performance</strong> (your core offset and the maximum cap).
+Suggested voltages are never deeper than -110 mV.</li>
+<li>A marker file is written before each rung. If the PC hard-resets
+during a rung, the next run reads the marker and treats that offset as
+<strong>unsafe</strong>.</li>
+</ol>
+<p>Use <em>Auto-UV ladder: preview</em> (or
+<code>--amd-auto-uv --amd-dry-run</code>) first: it prints the planned
+range, for example <code>+0 -&gt; -150 mV</code>, the number of rungs
+and the worst-case time. The ladder is heavy sustained load.</p>
+<p>In the window, a live <strong>Clock-vs-Voltage</strong> plot shows
+each rung's measured operating point (voltage from hwmon against core
+clock), coloured by result, with the current rung highlighted. Each run
+is saved as
+<code>~/.config/TuxBurner/amd-runs/amd-run-*.json</code>.</p>
+<p>Failure types shown in the history: OpenCL mismatch, driver error,
+hang timeout, process crash, setup error, and "apply refused" (by the
+floor, the driver range or LACT).</p>
+<hr />
+<h2 id="user-guide--9-profiles">9. Profiles</h2>
+<p>A profile is a saved plan. AMD profiles hold the VDDGFX offset, the
+core offset, the memory ceiling and the power cap.</p>
+<ul>
+<li><strong>Save:</strong> <em>Save as profile...</em> in the window, or
+<code>tburn-cli --amd-plan vo=-90 sclk=0 power=304 --amd-save-profile quiet --amd-profile-tier efficiency</code>.</li>
+<li><strong>Tiers:</strong> Efficiency, Balanced, Performance. The
+adaptive runtime (upstream feature) can switch between the tiers while
+you play; AMD profiles carry no per-point curve, so the drift check that
+could fight LACT does not apply.</li>
+<li><strong>Apply:</strong> from the Profiles page. A profile that was
+saved by hand is marked <em>unverified</em>: it has not passed a
+ladder.</li>
+<li><strong>Boot profile:</strong> the upstream <em>Apply on
+startup</em> workflow persists a profile in the root service. Leave it
+off if LACT applies your settings at boot, otherwise the two race.</li>
+<li><strong>Stock:</strong> <em>Restore Defaults</em> (see above) or
+<code>tburn-cli --restore-stock</code>.</li>
+</ul>
+<hr />
+<h2 id="user-guide--10-command-line">10. Command line</h2>
+<p><code>tburn-cli</code> and <code>tux-burner-cli</code> are the same
+program. The full list is in <a
+href="#cli-reference">CLI-REFERENCE.md</a>,
+<code>tburn-cli --help</code> and <code>man tburn-cli</code>. The AMD
+part, in short:</p>
+<div class="sourceCode" id="user-guide--cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb6-1"><a href="#user-guide--cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--version</span></span>
+<span id="user-guide--cb6-2"><a href="#user-guide--cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-status</span>                                        <span class="co"># read-only</span></span>
+<span id="user-guide--cb6-3"><a href="#user-guide--cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-plan</span> vo=-90 sclk=300 mclk=1375 power=374      <span class="co"># preview only</span></span>
+<span id="user-guide--cb6-4"><a href="#user-guide--cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-plan</span> vo=-90 <span class="at">--amd-apply</span> <span class="at">--amd-dry-run</span>         <span class="co"># preview of an apply</span></span>
+<span id="user-guide--cb6-5"><a href="#user-guide--cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-plan</span> vo=-90 <span class="at">--amd-apply</span>                       <span class="co"># write (refused if LACT runs)</span></span>
+<span id="user-guide--cb6-6"><a href="#user-guide--cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-plan</span> vo=-90 <span class="at">--amd-apply</span> <span class="at">--override-lact</span>       <span class="co"># write although LACT runs</span></span>
+<span id="user-guide--cb6-7"><a href="#user-guide--cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-plan</span> vo=-90 <span class="at">--amd-export-lact</span> ~/lact-amd.yaml</span>
+<span id="user-guide--cb6-8"><a href="#user-guide--cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-stress</span> 60                                     <span class="co"># OpenCL load; no tuning writes</span></span>
+<span id="user-guide--cb6-9"><a href="#user-guide--cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-auto-uv</span> <span class="at">--amd-dry-run</span>                         <span class="co"># ladder plan</span></span>
+<span id="user-guide--cb6-10"><a href="#user-guide--cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-auto-uv</span>                                       <span class="co"># run the ladder (heavy load)</span></span>
+<span id="user-guide--cb6-11"><a href="#user-guide--cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-restore</span> lact                                  <span class="co"># or: stock</span></span>
+<span id="user-guide--cb6-12"><a href="#user-guide--cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--daemon-status</span></span></code></pre></div>
+<p><code>power=</code> takes watts or a percent of the default cap
+(<code>power=110%</code>). <code>fan=</code> takes up to five
+<code>TEMP:PERCENT</code> points. <code>zero_rpm=on|off</code> is also
+accepted.</p>
+<hr />
+<h2 id="user-guide--11-files-and-settings">11. Files and settings</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.config/TuxBurner/</code></td>
+<td>Your profiles, ladder run history (<code>amd-runs/</code>), debug
+logs, settings (<code>tux_burner.toml</code>).</td>
+</tr>
+<tr>
+<td><code>/etc/tux-burner/amd-vddgfx-floor-mv</code></td>
+<td>The daemon's safety floor (root-owned).</td>
+</tr>
+<tr>
+<td><code>/var/lib/tux-burner/</code></td>
+<td>The daemon's saved state (boot profile, energy counters).</td>
+</tr>
+<tr>
+<td><code>/var/opt/tux-burner/libexec/tux-burnerd</code></td>
+<td>The installed copy of the daemon binary.</td>
+</tr>
+<tr>
+<td><code>/run/tux-burnerd.sock</code></td>
+<td>The daemon socket.</td>
+</tr>
+<tr>
+<td><code>/etc/systemd/system/tux-burnerd.service</code></td>
+<td>The service unit.</td>
+</tr>
+</tbody>
+</table>
+<p>Environment variables: <code>TUX_BURNER_AMD_VDDGFX_FLOOR_MV</code>
+(app floor), <code>TUX_BURNERD_AMD_VDDGFX_FLOOR_MV</code> (daemon floor,
+in the unit), <code>TUX_BURNER_HOME</code> (use another home
+directory).</p>
+<hr />
+<h2 id="user-guide--12-moving-from-penguinburner-or-penguin-burner-amd">12. Moving
+from PenguinBurner or penguin-burner-amd</h2>
+<p>Your data is <strong>copied, never moved or deleted</strong>:</p>
+<ul>
+<li>On install, the package copies <code>/etc/penguin-burner</code> to
+<code>/etc/tux-burner</code> and <code>/var/lib/penguin-burner</code> to
+<code>/var/lib/tux-burner</code> if the new ones do not exist yet.</li>
+<li>On first start, the program copies
+<code>~/.config/PenguinBurner</code> to <code>~/.config/TuxBurner</code>
+(profiles, run history, settings; <code>penguin_burner.toml</code>
+becomes <code>tux_burner.toml</code>).</li>
+<li>The daemon also reads the old
+<code>/etc/penguin-burner/amd-vddgfx-floor-mv</code> if the new floor
+file does not exist.</li>
+</ul>
+<p>The <strong>old service</strong>
+(<code>penguin-burnerd.service</code>) is not touched by the package.
+Switch over yourself, once, so two daemons never run together:</p>
+<div class="sourceCode" id="user-guide--cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb7-1"><a href="#user-guide--cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-U</span> tux-burner-0.99-1-x86_64.pkg.tar.zst</span>
+<span id="user-guide--cb7-2"><a href="#user-guide--cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> systemctl disable <span class="at">--now</span> penguin-burnerd.service</span>
+<span id="user-guide--cb7-3"><a href="#user-guide--cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> rm <span class="at">-f</span> /etc/systemd/system/penguin-burnerd.service</span>
+<span id="user-guide--cb7-4"><a href="#user-guide--cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> tburn-cli <span class="at">--install-systemd-service</span></span>
+<span id="user-guide--cb7-5"><a href="#user-guide--cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--daemon-status</span></span>
+<span id="user-guide--cb7-6"><a href="#user-guide--cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--amd-status</span></span></code></pre></div>
+<p>Check that <code>--amd-status</code> shows your safety floor (and, if
+you had lowered it, the same value). Once everything looks right you may
+remove the old directories (<code>/etc/penguin-burner</code>,
+<code>/var/lib/penguin-burner</code>,
+<code>/var/opt/penguin-burner</code>,
+<code>~/.config/PenguinBurner</code>).</p>
+<hr />
+<h2 id="user-guide--13-troubleshooting">13. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>What to try</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"daemon floor unknown (tux-burnerd not reachable)"</td>
+<td>Install the service:
+<code>tburn-cli --install-systemd-service</code>. Check
+<code>systemctl status tux-burnerd</code>.</td>
+</tr>
+<tr>
+<td>The values cannot be changed</td>
+<td>OverDrive is off. Check that
+<code>/sys/class/drm/card*/device/pp_od_clk_voltage</code> exists. Many
+distributions need <code>amdgpu.ppfeaturemask=0xffffffff</code> on the
+kernel command line.</td>
+</tr>
+<tr>
+<td>A write is refused because LACT is running</td>
+<td>LACT owns the GPU. Export to LACT, or use
+<code>--override-lact</code> knowing LACT will re-apply its values.</td>
+</tr>
+<tr>
+<td>Apply or the ladder is greyed out</td>
+<td>The app floor and the daemon floor differ. Use the window's
+<em>Safety floors</em> row to sync them.</td>
+</tr>
+<tr>
+<td>"apply refused by the floor"</td>
+<td>The value is deeper than the floor. Raise the floor on purpose (both
+floors), or pick a shallower value.</td>
+</tr>
+<tr>
+<td>Stress test says no OpenCL device</td>
+<td>Install an OpenCL driver (<code>rocm-opencl-runtime</code> or Mesa
+rusticl) and <code>ocl-icd</code>.</td>
+</tr>
+<tr>
+<td>The screen freezes during a ladder</td>
+<td>That offset was too deep. After the reset, run the ladder again: the
+marker file makes Tux Burner treat that offset as unsafe. Go back to
+LACT's values or a shallower offset.</td>
+</tr>
+<tr>
+<td>After switching from PenguinBurner nothing is listed</td>
+<td>See <a
+href="#user-guide--12-moving-from-penguinburner-or-penguin-burner-amd">Moving from
+PenguinBurner</a>. Check <code>~/.config/TuxBurner/</code>.</td>
+</tr>
+<tr>
+<td>The Game Library or overlay does nothing</td>
+<td>Those parts are upstream NVIDIA-era features and are less tested on
+AMD. Please report what you see.</td>
+</tr>
+</tbody>
+</table>
+<p>When you report a problem, include <code>tburn-cli --version</code>,
+<code>tburn-cli --amd-status</code> and
+<code>tburn-cli --daemon-status</code>. <strong>Remove</strong> your
+host name, IP addresses and the GPU serial/unique id before posting.</p>
+<hr />
+<h2 id="user-guide--14-uninstall">14. Uninstall</h2>
+<div class="sourceCode" id="user-guide--cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb8-1"><a href="#user-guide--cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> tburn-cli <span class="at">--uninstall-systemd-service</span>      <span class="co"># stops and removes the service</span></span>
+<span id="user-guide--cb8-2"><a href="#user-guide--cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-R</span> tux-burner                       <span class="co"># or apt remove / dnf remove</span></span></code></pre></div>
+<p>Your files in <code>~/.config/TuxBurner/</code> are kept; delete them
+if you want. The GPU keeps whatever was last applied until the next
+reboot or until you restore it
+(<code>tburn-cli --amd-restore stock</code>).</p>
+<hr />
+<h2 id="user-guide--15-credits">15. Credits</h2>
+<ul>
+<li><strong>PenguinBurner</strong> by <strong>jpietek</strong>,
+GPL-3.0-or-later: <a
+href="https://github.com/jpietek/PenguinBurner">https://github.com/jpietek/PenguinBurner</a>.
+Based on version 0.8.3.</li>
+<li><strong>LACT</strong> (<a
+href="https://github.com/ilya-zlobintsev/LACT">https://github.com/ilya-zlobintsev/LACT</a>)
+for the configuration format and the coexistence rules.</li>
+<li>The Linux <strong>amdgpu</strong> driver's OverDrive interface.</li>
+<li>See <code>CREDITS.md</code> and <code>CHANGELOG.md</code>.</li>
+</ul>
+<p>Tux Burner is a fork of PenguinBurner. Changes are Copyright (C) 2026
+by Eugene Flanagin. Licensed under GPL-3.0-or-later.</p>
+<hr />
+<h2 id="user-guide--16-glossary">16. Glossary</h2>
+<p>See <a href="#glossary">GLOSSARY.md</a>. The short version:</p>
+<ul>
+<li><strong>Undervolt</strong>: lower the voltage so the card uses less
+power.</li>
+<li><strong>VDDGFX offset</strong>: the AMD voltage knob, in millivolts;
+negative is lower.</li>
+<li><strong>SCLK / MCLK</strong>: core clock / memory clock.</li>
+<li><strong>Rung</strong>: one step of the ladder.</li>
+<li><strong>Floor</strong>: the deepest offset allowed.</li>
+<li><strong>LACT</strong>: a Linux AMD GPU control program.</li>
+<li><strong>Daemon</strong>: the root service,
+<code>tux-burnerd</code>.</li>
+</ul>
+
+</section><section class="doc" id="cli-reference">
+<h1 id="cli-reference--tux-burner---command-line-reference">Tux Burner - Command-line
+reference</h1>
+<p>Version 0.99. Programs: <code>tburn-cli</code> and
+<code>tux-burner-cli</code> (the same program). <code>tux-burner</code>
+and <code>tburn</code> start the window.</p>
+<p>Tux Burner is Copyright (C) 2026 by Eugene Flanagin. Licensed under
+GPL-3.0-or-later. It is a fork of PenguinBurner by jpietek
+(GPL-3.0-or-later). Not endorsed by or affiliated with the author of
+PenguinBurner.</p>
+<p>Plain words first: the commands that <strong>only read</strong> are
+<code>--version</code>, <code>--help</code>, <code>--amd-status</code>,
+<code>--daemon-status</code>, <code>--list-auto-uv-profiles</code>, and
+any <code>--amd-plan ...</code> <strong>without</strong>
+<code>--amd-apply</code> (that one prints what would be written). The
+commands that <strong>write to the GPU</strong> are
+<code>--amd-apply</code>, <code>--amd-auto-uv</code>,
+<code>--restore-stock</code>, <code>--amd-restore stock</code>,
+<code>--daemonize</code> and the upstream Auto-UV scan.
+<code>--amd-stress</code> and <code>--amd-auto-uv</code> also put heavy
+sustained load on the GPU. Write commands go through the root service
+<code>tux-burnerd</code>, and are refused while LACT runs unless you add
+<code>--override-lact</code>.</p>
+<h2 id="cli-reference--the-amd-options-in-short">The AMD options in short</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--amd-status</code></td>
+<td>Show ranges, live values, fan curve and LACT state. Read-only.</td>
+</tr>
+<tr>
+<td><code>--amd-plan KEY=VALUE ...</code></td>
+<td>Describe a plan: <code>vo=&lt;mV&gt;</code>
+<code>sclk=&lt;MHz&gt;</code> <code>mclk=&lt;MHz&gt;</code>
+<code>power=&lt;W&gt;</code> or <code>&lt;NN%&gt;</code>
+<code>fan=T:P,T:P,...</code> (up to 5 points) `zero_rpm=on</td>
+</tr>
+<tr>
+<td><code>--amd-dry-run</code></td>
+<td>With <code>--amd-apply</code>, <code>--amd-save-profile</code>,
+<code>--amd-auto-uv</code> or <code>--amd-stress</code>: show, change
+nothing.</td>
+</tr>
+<tr>
+<td><code>--amd-apply</code></td>
+<td>Write the plan now (checked against the live driver ranges and both
+floors).</td>
+</tr>
+<tr>
+<td><code>--amd-save-profile NAME</code></td>
+<td>Save the plan as a Tux Burner profile (marked unverified).</td>
+</tr>
+<tr>
+<td><code>--amd-profile-tier T</code></td>
+<td>Tier for the saved profile: <code>efficiency</code>,
+<code>balanced</code>, <code>performance</code>.</td>
+</tr>
+<tr>
+<td><code>--amd-export-lact [PATH]</code></td>
+<td>Write the plan as a LACT config fragment (to the screen without
+PATH).</td>
+</tr>
+<tr>
+<td><code>--amd-stress SECONDS</code></td>
+<td>OpenCL stress workload. Heavy load. No tuning writes.</td>
+</tr>
+<tr>
+<td><code>--amd-auto-uv</code></td>
+<td>The ladder. Heavy load. Options: <code>--amd-auto-uv-start MV</code>
+(0), <code>--amd-auto-uv-step MV</code> (10),
+<code>--amd-auto-uv-floor MV</code> (driver minimum, never below the app
+floor), <code>--amd-auto-uv-rung-seconds S</code> (60),
+<code>--amd-auto-uv-margin MV</code> (20).</td>
+</tr>
+<tr>
+<td><code>--amd-voltage-floor MV</code></td>
+<td>The app's floor (default -150). Deeper needs
+<code>--allow-below-floor</code>.</td>
+</tr>
+<tr>
+<td><code>--allow-below-floor</code></td>
+<td>Confirms a floor deeper than -150 mV.</td>
+</tr>
+<tr>
+<td><code>--amd-set-daemon-floor MV|default</code></td>
+<td>Set the root service's own floor.</td>
+</tr>
+<tr>
+<td><code>--amd-restore lact|stock</code></td>
+<td>Give the GPU back to LACT, or reset to driver defaults.</td>
+</tr>
+<tr>
+<td><code>--override-lact</code></td>
+<td>Write although LACT is running.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cli-reference--full---help-output">Full <code>--help</code> output</h2>
+<p>This is the output of <code>tburn-cli --help</code>, kept here so the
+guide matches the program. The upstream sections (Auto-UV, Steam overlay
+setup, Runtime and daemon, Runtime tuning, Advanced/debug) describe the
+NVIDIA-era features; many of them are not used on AMD.</p>
+<pre class="text"><code>usage: tburn-cli [options]
+
+Tux Burner: GPU undervolting and overclocking for Linux (AMD amdgpu
+and NVIDIA). A fork of PenguinBurner by jpietek (GPL-3.0-or-later).
+Run Auto-UV scans, manage the saved Efficiency/Balanced/Performance
+profiles, drive the adaptive daemon runtime, and set up the Steam
+launch wrapper and in-game overlay.
+
+options:
+  -h, --help            show this help message and exit
+  --version             Print the Tux Burner version and exit
+
+Auto-UV:
+  --auto-uv-voltage-scan
+                        Discover a stable fixed-clock undervolt from the
+                        live/default NVIDIA V/F curve, step the lock voltage
+                        down through real editable VF bins, and verify
+                        candidates with Q2RTX plus CUDA load. Resume an
+                        unfinished scan automatically when the GPU and
+                        settings match
+  --list-auto-uv-profiles
+                        List saved Auto-UV profiles and exit; use a shown
+                        profile id or candidate id with --auto-uv-profile.
+  --assign-auto-uv-tier PROFILE TIER
+                        Assign a saved verified Auto-UV profile to an adaptive
+                        tier and exit. PROFILE accepts the same selectors as
+                        --auto-uv-profile; TIER is efficiency, balanced,
+                        performance, or none.
+  --auto-uv-mode MODE   Auto-UV preset path. efficiency uses one 2-bin tail
+                        sweep to the voltage floor; balanced uses the 2-bin
+                        tail sweep; performance uses the 2-bin tail sweep plus
+                        Auto-OC.
+  --auto-uv-q2rtx-resolution {auto,1080p,1440p,4k}
+                        Q2RTX resolution for the complete Auto-UV scan and
+                        final verification. Default: auto (4K on desktop RTX
+                        4080/Super, 4090, 5070 Ti, 5080 and 5090, plus RTX
+                        4090/5090 Laptop; 1080p on all others, including
+                        unknown GPUs). Use 1080p to compare a lighter
+                        rendering workload. CUDA is unchanged.
+  --auto-uv-retry-after-freeze
+                        CLI only; off by default. On an explicit scan resume
+                        after a hard freeze, allow retrying the interrupted
+                        clock climb at higher voltage. May require further
+                        reboots. Keeps the failed-point blacklist, predicted
+                        stability margins, floor caution and voltage headroom.
+  --auto-uv-min-voltage-mv mV
+                        Lowest voltage for the selected undervolt point.
+                        Overrides the detected GPU table floor and the
+                        percentage-drop fallback. Lower-voltage curve
+                        transitions are checked separately at their lower
+                        clocks.
+  --auto-uv-memory-offset-mhz MHz
+                        Memory clock V/F offset to apply during Auto-UV and
+                        save with the final profile. NVML offsets are in
+                        transfer-rate units (MT/s): the realized memory clock
+                        rises by half the value. Clamped to the driver-
+                        reported limit for the GPU (fallback 0..2000 when NVML
+                        exposes no range).
+  --auto-uv-power-limit-w W
+                        Power limit in watts to apply during Auto-UV and save
+                        with the final profile. The UI clamps this to the
+                        selected GPU&#39;s NVML minimum and maximum power-limit
+                        range.
+  --auto-uv-boost {standard,aggressive}
+                        CLI-only boost headroom for every scanned tier:
+                        Standard Boost (default) uses 2 rising tail bins (+30
+                        MHz nominal); Aggressive Boost uses 4 (+60 MHz
+                        nominal). Does not enable freeze retries.
+  --auto-uv-tail-rise-bins N
+                        How many voltage bins can the voltage curve rise above
+                        the locked undervolt point. Defaults to 2 for every
+                        tier; 0 makes the tail flat.
+  --auto-uv-final-verification-s SECONDS
+                        Final verification soak per tier for this scan (every
+                        stage of an adaptive 3-in-1 run uses the same
+                        duration). Default 300 seconds; equivalent to
+                        TUX_BURNER_AUTO_UV_FINAL_SECONDS.
+  --auto-uv-efficiency-power-limit-w W
+                        Full-scan override: the Efficiency tier&#39;s power limit
+                        in watts, applied for that tier&#39;s baseline, descent,
+                        final verification, and saved profile. Only meaningful
+                        with --auto-uv-mode adaptive.
+  --auto-uv-efficiency-memory-offset-mhz MHz
+                        Full-scan override: the Efficiency tier&#39;s memory V/F
+                        offset (NVML transfer-rate units, like --auto-uv-
+                        memory-offset-mhz), applied for that tier&#39;s descent
+                        and saved with its profile. Only meaningful with
+                        --auto-uv-mode adaptive.
+  --auto-uv-efficiency-target-voltage-mv mV
+                        Custom Efficiency voltage target for a single-tier or
+                        full scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-uv-efficiency-target-clock-mhz MHz
+                        Custom Efficiency clock target for a single-tier or
+                        full scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-uv-balanced-power-limit-w W
+                        Full-scan override: the Balanced tier&#39;s power limit in
+                        watts, applied for that tier&#39;s baseline, descent,
+                        final verification, and saved profile. Only meaningful
+                        with --auto-uv-mode adaptive.
+  --auto-uv-balanced-memory-offset-mhz MHz
+                        Full-scan override: the Balanced tier&#39;s memory V/F
+                        offset (NVML transfer-rate units, like --auto-uv-
+                        memory-offset-mhz), applied for that tier&#39;s descent
+                        and saved with its profile. Only meaningful with
+                        --auto-uv-mode adaptive.
+  --auto-uv-balanced-target-voltage-mv mV
+                        Custom Balanced voltage target for a single-tier or
+                        full scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-uv-balanced-target-clock-mhz MHz
+                        Custom Balanced clock target for a single-tier or full
+                        scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-uv-performance-power-limit-w W
+                        Full-scan override: the Performance tier&#39;s power limit
+                        in watts, applied for that tier&#39;s baseline, descent,
+                        final verification, and saved profile. Only meaningful
+                        with --auto-uv-mode adaptive.
+  --auto-uv-performance-memory-offset-mhz MHz
+                        Full-scan override: the Performance tier&#39;s memory V/F
+                        offset (NVML transfer-rate units, like --auto-uv-
+                        memory-offset-mhz), applied for that tier&#39;s descent
+                        and saved with its profile. Only meaningful with
+                        --auto-uv-mode adaptive.
+  --auto-uv-performance-target-voltage-mv mV
+                        Custom Performance voltage target for a single-tier or
+                        full scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-uv-performance-target-clock-mhz MHz
+                        Custom Performance clock target for a single-tier or
+                        full scan. Defaults use the GPU table. Clock ranges:
+                        Efficiency -15% to Balanced; Balanced from Efficiency
+                        to Performance; Performance from Balanced to
+                        Performance +5%. Change only if you understand GPU
+                        tuning.
+  --auto-oc-target-voltage-mv mV
+                        Performance-mode Auto-OC voltage cap in mV. Overrides
+                        the detected GPU table target. Defaults are optimized
+                        for most GPUs; change only if you understand
+                        voltage/frequency tuning and instability risks.
+  --auto-oc-target-clock-mhz MHz
+                        Performance-mode Auto-OC core clock cap in MHz.
+                        Overrides the detected GPU table target. Defaults are
+                        optimized for most GPUs; change only if you understand
+                        voltage/frequency tuning and instability risks.
+
+Steam overlay setup:
+  --set-steam-overlay-launch APPID
+                        Write the Tux Burner native-overlay launch option for
+                        a Steam app id and exit. The write is verified so
+                        running Steam rewrites are reported instead of treated
+                        as success.
+
+Runtime and daemon essentials:
+  --silent-fan-curve    Runtime/daemon only: opt in to Tux Burner manual fan-
+                        curve control; by default fan control is left to the
+                        GPU driver. Auto-UV scans write a suggested fan curve
+                        automatically when safe.
+  --daemonize           Apply normal runtime through the running tux-burnerd
+                        service after an Auto-UV final curve exists. Auto-UV
+                        scans remain foreground-only.
+  --install-systemd-service
+                        Install or update the Tux Burner daemon service:
+                        refresh the daemon binary at /var/opt/tux-
+                        burner/libexec, rewrite the unit, and restart it. With
+                        profile options, also set the persistent boot profile;
+                        without them, an existing boot profile is kept. Asks
+                        for authorization (pkexec/sudo) when not run as root.
+  --uninstall-systemd-service, --deinstall-systemd-service
+                        Stop and remove the persistent Tux Burner systemd
+                        service. Asks for authorization (pkexec/sudo) when not
+                        run as root.
+  --migrate-to-daemon-service
+                        Install tux-burnerd.service and migrate an existing
+                        legacy TuxBurner.service when possible. Asks for
+                        authorization (pkexec/sudo) when not run as root.
+  --daemon-status       Print Tux Burner hardware daemon status and exit.
+  --set-main-gpu GPU-UUID
+                        On a multi-NVIDIA-GPU system, make a saved startup GPU
+                        the daemon&#39;s main monitored GPU after boot.
+  --clear-main-gpu      Clear the explicit Main GPU and restore last-saved-GPU
+                        behavior.
+  --restore-stock       Recovery: reset the GPU to stock now and make stock
+                        the boot state through the running tux-burnerd
+                        service. Saved profiles are kept. Works without the
+                        GUI.
+  --auto-uv-profile AUTO_UV_PROFILE
+                        Use an Auto-UV profile by profile id, candidate id,
+                        JSON path, &#39;active&#39;, or &#39;latest&#39; for daemon runtime,
+                        systemd service runtime, and internal final
+                        verification.
+  --adaptive-auto-uv    Runtime/daemon only: allow Tux Burner to adapt between
+                        saved Auto-UV profile tiers from base present-frame
+                        p95 pacing. Requires at least one saved verified
+                        profile tier. Target defaults to 60 FPS; override the
+                        service env TUX_BURNER_ADAPTIVE_TARGET_FPS for 30, 50,
+                        60, 120, etc.
+  --journal-hours N     Hours of systemd journal history to suggest after
+                        daemonizing; default 4.
+
+Runtime tuning:
+  --config CONFIG       Runtime config path to read defaults from
+  --gpu-index GPU_INDEX
+                        Override the configured GPU index
+
+Advanced/debug:
+  --debug-log           Write a verbose diagnostic log next to the selected
+                        config file under debug-logs/; with the default config
+                        this is ~/.config/TuxBurner/debug-logs
+
+AMD (amdgpu OverDrive) tuning:
+  Local AMD port. Reads come from sysfs; writes go through tux-burnerd. While LACT (lactd) runs it owns the GPU: writes need --override-lact.
+
+  --amd-status          Print the AMD GPU&#39;s OverDrive ranges, live values, fan
+                        curve and LACT state (read-only)
+  --amd-plan KEY=VALUE [KEY=VALUE ...]
+                        Tuning plan: vo=&lt;mV&gt; (VDDGFX offset, negative =
+                        undervolt), sclk=&lt;MHz&gt; offset, mclk=&lt;MHz&gt; max memory
+                        clock, power=&lt;W&gt;|&lt;NN%&gt; cap, fan=T:P,T:P,... (max 5
+                        points), zero_rpm=on|off. Alone it previews the exact
+                        sysfs writes (dry run)
+  --amd-dry-run         With --amd-apply/--amd-save-profile/--amd-auto-
+                        uv/--amd-stress: show what would happen, change
+                        nothing
+  --amd-apply           Apply --amd-plan now through tux-burnerd (validated
+                        against the live OD_RANGE)
+  --amd-save-profile NAME
+                        Save --amd-plan as an (unverified) Tux Burner profile
+                        the GUI and daemon can apply
+  --amd-profile-tier {efficiency,balanced,performance}
+                        Tier to assign the saved AMD profile to
+  --amd-export-lact [PATH]
+                        Write --amd-plan as a LACT config fragment (stdout
+                        when PATH is omitted)
+  --amd-stress SECONDS  Run the OpenCL brute-force stability workload
+                        (sustained GPU load; no tuning writes)
+  --amd-auto-uv         AMD Auto-UV: step the VDDGFX offset down rung by rung,
+                        stress each rung, save three tiers
+  --amd-auto-uv-start MV
+                        First rung (default 0 = stock)
+  --amd-auto-uv-step MV
+                        Rung size in mV (default 10)
+  --amd-auto-uv-floor MV
+                        Lowest offset to try (default: driver minimum)
+  --amd-auto-uv-rung-seconds S
+                        Stress seconds per rung (default 60)
+  --amd-auto-uv-margin MV
+                        Safety margin added to the deepest stable rung
+                        (default 20)
+  --amd-voltage-floor MV
+                        Deepest VDDGFX offset Tux Burner will plan, write or
+                        sweep to (default -150 mV on this machine). Going
+                        deeper also needs --allow-below-floor; the daemon
+                        enforces its own floor (/etc/tux-burner/amd-vddgfx-
+                        floor-mv)
+  --allow-below-floor   Confirm an --amd-voltage-floor deeper than the default
+                        -150 mV
+  --amd-set-daemon-floor MV|default
+                        Set the DAEMON&#39;s VDDGFX safety floor (/etc/tux-
+                        burner/amd-vddgfx-floor-mv, written by tux-burnerd) or
+                        &#39;default&#39; to restore -150 mV. Values deeper than -150
+                        also need --allow-below-floor. Without this the daemon
+                        refuses deeper writes even if --amd-voltage-floor
+                        allows them
+  --amd-restore {lact,stock}
+                        Restore the AMD GPU: &#39;lact&#39; asks lactd to re-apply its
+                        current profile (lact cli profile set); &#39;stock&#39; resets
+                        OverDrive (sclk/mclk/voltage offsets), the power cap
+                        and - unless LACT runs - the PMFW fan curve to driver
+                        defaults through tux-burnerd, with readback
+  --override-lact       Write even though LACT is running (LACT re-applies its
+                        own settings on its next apply)</code></pre>
+<h2 id="cli-reference--exit-status">Exit status</h2>
+<p><code>0</code> success. Non-zero: a refused or failed operation (the
+message says why). The OpenCL stress workload itself exits with 0 =
+passed, 1 = setup error (no device, build failed), 3 = instability (a
+wrong result), 4 = hang (the GPU stopped answering); the ladder reads
+these to decide a rung's result.</p>
+
+</section><section class="doc" id="glossary">
+<h1 id="glossary--tux-burner---glossary">Tux Burner - Glossary</h1>
+<p>Every technical word in the guide, in plain English.</p>
+<p>Tux Burner is Copyright (C) 2026 by Eugene Flanagin. Licensed under
+GPL-3.0-or-later. It is a fork of PenguinBurner by jpietek.</p>
+<table>
+<thead>
+<tr>
+<th>Word</th>
+<th>Plain meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adaptive runtime</strong></td>
+<td>An upstream feature: while you play, the daemon switches between
+your Efficiency, Balanced and Performance profiles depending on the
+frame rate.</td>
+</tr>
+<tr>
+<td><strong>amdgpu</strong></td>
+<td>The Linux kernel driver for AMD Radeon cards. Tux Burner talks to it
+through files under <code>/sys/class/drm/</code>.</td>
+</tr>
+<tr>
+<td><strong>App floor</strong></td>
+<td>The deepest voltage offset the window and <code>tburn-cli</code>
+allow. Default -150 mV.</td>
+</tr>
+<tr>
+<td><strong>Auto-UV</strong></td>
+<td>"Automatic undervolt": the search for a good voltage setting. On AMD
+it is the <em>ladder</em>.</td>
+</tr>
+<tr>
+<td><strong>Balanced</strong></td>
+<td>A tier: the power cap that was set when the scan started, with the
+found voltage.</td>
+</tr>
+<tr>
+<td><strong>Boot profile</strong></td>
+<td>A profile the root service applies when the PC starts. Off by
+default.</td>
+</tr>
+<tr>
+<td><strong>Clock</strong></td>
+<td>How fast a part of the GPU runs, in MHz. SCLK is the core clock,
+MCLK the memory clock.</td>
+</tr>
+<tr>
+<td><strong>Daemon</strong></td>
+<td>A program that runs in the background. Here:
+<code>tux-burnerd</code>, the root service that does every GPU
+write.</td>
+</tr>
+<tr>
+<td><strong>Daemon floor</strong></td>
+<td>The root service's own limit on the voltage offset. It refuses
+deeper writes whatever the window says.</td>
+</tr>
+<tr>
+<td><strong>Dry run</strong></td>
+<td>Show what would be done and do nothing.</td>
+</tr>
+<tr>
+<td><strong>Edge / junction</strong></td>
+<td>Two GPU temperatures. Junction (the hot spot) is the hotter one; the
+fan curve follows it.</td>
+</tr>
+<tr>
+<td><strong>Efficiency</strong></td>
+<td>A tier: the found voltage with the card's default power cap.</td>
+</tr>
+<tr>
+<td><strong>Fan curve</strong></td>
+<td>A list of "at this temperature, run the fan at this percent" points.
+The AMD firmware accepts up to five.</td>
+</tr>
+<tr>
+<td><strong>Floor</strong></td>
+<td>See <em>App floor</em> and <em>Daemon floor</em>.</td>
+</tr>
+<tr>
+<td><strong>Fork</strong></td>
+<td>A copy of a project that goes its own way. Tux Burner is a fork of
+PenguinBurner.</td>
+</tr>
+<tr>
+<td><strong>GPL-3.0-or-later</strong></td>
+<td>The free-software licence of Tux Burner and of PenguinBurner.</td>
+</tr>
+<tr>
+<td><strong>hwmon</strong></td>
+<td>The kernel's folder of sensor readings (temperature, power, fan,
+voltage).</td>
+</tr>
+<tr>
+<td><strong>Instability</strong></td>
+<td>The card makes wrong results, glitches, resets the driver or freezes
+the PC.</td>
+</tr>
+<tr>
+<td><strong>LACT</strong></td>
+<td>"Linux AMDGPU Control Application", a popular tool for tuning AMD
+cards. Its service is <code>lactd</code>.</td>
+</tr>
+<tr>
+<td><strong>Ladder</strong></td>
+<td>The AMD Auto-UV search: 0 mV, -10, -20 ... one <em>rung</em> at a
+time, with a stress test on each.</td>
+</tr>
+<tr>
+<td><strong>Margin</strong></td>
+<td>Extra safety added to the deepest passing rung (default 20 mV, so
+the saved value is shallower).</td>
+</tr>
+<tr>
+<td><strong>MCLK max</strong></td>
+<td>The ceiling of the memory clock, in MHz.</td>
+</tr>
+<tr>
+<td><strong>mV</strong></td>
+<td>Millivolt, a thousandth of a volt.</td>
+</tr>
+<tr>
+<td><strong>OpenCL</strong></td>
+<td>A standard for running calculations on the GPU. Tux Burner's stress
+test uses it on AMD.</td>
+</tr>
+<tr>
+<td><strong>OverDrive</strong></td>
+<td>AMD's name for tuning controls in the driver. Tux Burner reads and
+writes them through <code>pp_od_clk_voltage</code>.</td>
+</tr>
+<tr>
+<td><strong>Overlay</strong></td>
+<td>The in-game frame-rate display (an upstream feature).</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>A tier: your core offset and the highest power cap.</td>
+</tr>
+<tr>
+<td><strong>PMFW</strong></td>
+<td>The firmware on the GPU that runs the fan curve.</td>
+</tr>
+<tr>
+<td><strong>Power cap</strong></td>
+<td>The most power, in watts, the card may use.</td>
+</tr>
+<tr>
+<td><strong>Profile</strong></td>
+<td>A saved plan (voltage, clocks, power, tier).</td>
+</tr>
+<tr>
+<td><strong>Rung</strong></td>
+<td>One step of the ladder.</td>
+</tr>
+<tr>
+<td><strong>SCLK offset</strong></td>
+<td>How many MHz to add to (or take from) the core clock.</td>
+</tr>
+<tr>
+<td><strong>Stock</strong></td>
+<td>The driver's default settings.</td>
+</tr>
+<tr>
+<td><strong>Stress test</strong></td>
+<td>A heavy GPU workload that checks its own answers, used to see
+whether a setting is stable.</td>
+</tr>
+<tr>
+<td><strong>sysfs</strong></td>
+<td>The kernel's folder of files under <code>/sys</code> that expose
+hardware.</td>
+</tr>
+<tr>
+<td><strong>Tier</strong></td>
+<td>One of Efficiency, Balanced, Performance.</td>
+</tr>
+<tr>
+<td><strong>Undervolt</strong></td>
+<td>Lower the voltage. Less power and heat, if the card stays
+stable.</td>
+</tr>
+<tr>
+<td><strong>VDDGFX offset</strong></td>
+<td>The AMD voltage knob: a global offset in mV added to the card's
+voltage table. Negative is an undervolt.</td>
+</tr>
+<tr>
+<td><strong>Zero RPM</strong></td>
+<td>The mode in which the fans stop at low temperature.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+</body></html>

@@ -1,0 +1,32 @@
+name: Bug report
+description: Something does not work. Tux Burner was tested on one PC only, so hardware reports are very welcome.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tux Burner was tested only on a Ryzen 7 7800X3D with a Radeon RX 9070 XT. Other AMD generations and the
+        NVIDIA backend may have bugs. Please include your hardware and the output below.
+        **Remove your host name, IP addresses and the GPU serial / unique id before posting.**
+  - type: input
+    id: version
+    attributes:
+      label: Version (`tburn-cli --version`)
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: GPU and CPU model, kernel version, distribution
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: "`tburn-cli --amd-status` and `tburn-cli --daemon-status` output"
+      render: text
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true

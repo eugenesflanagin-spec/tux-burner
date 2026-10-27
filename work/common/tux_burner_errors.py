@@ -1,0 +1,8 @@
+"""Shared Tux Burner runtime exceptions.
+
+Small modules raise these errors so the CLI can present one consistent failure path.
+"""
+
+
+class NvmlError(RuntimeError):
+    pass

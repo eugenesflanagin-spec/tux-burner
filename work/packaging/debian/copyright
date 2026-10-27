@@ -1,0 +1,23 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Tux Burner
+Source: https://github.com/eugenesflanagin-spec/tux-burner
+
+Files: *
+Copyright: 2026 Eugene Flanagin (changes in the Tux Burner fork)
+           PenguinBurner contributors (upstream, by jpietek, https://github.com/jpietek/PenguinBurner)
+License: GPL-3.0-or-later
+Comment: Tux Burner is a fork of PenguinBurner (version 0.8.3) by jpietek. It is an
+ independent fork, not endorsed by or affiliated with the author of PenguinBurner.
+
+License: GPL-3.0-or-later
+ This package is free software: you can redistribute it and/or modify it under
+ the terms of the GNU General Public License as published by the Free Software
+ Foundation, either version 3 of the License, or (at your option) any later
+ version.
+ .
+ This package is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU General Public License version
+ 3 can be found in "/usr/share/common-licenses/GPL-3".

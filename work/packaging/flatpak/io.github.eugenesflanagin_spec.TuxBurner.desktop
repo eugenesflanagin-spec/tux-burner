@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Tux Burner
+GenericName=GPU Tuning Tool
+Comment=GPU undervolting and overclocking for AMD Radeon (amdgpu OverDrive) and NVIDIA, with saved tiers, adaptive per-game profiles for Steam, Lutris, Heroic and Faugus, and an in-game overlay
+Exec=tux-burner
+Icon=tux-burner
+Terminal=false
+Categories=Settings;HardwareSettings;Qt;
+Keywords=Tux;Burner;Tux Burner;tux-burner;tburn;AMD;Radeon;amdgpu;RDNA;GPU;Tuning;Undervolt;Undervolting;Overclock;Overclocking;Adaptive;Overlay;Auto-UV;Q2RTX;OpenCL;Steam;Lutris;Heroic;Faugus;
+StartupNotify=true
+StartupWMClass=io.github.eugenesflanagin_spec.TuxBurner

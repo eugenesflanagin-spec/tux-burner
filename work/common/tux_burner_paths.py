@@ -1,0 +1,258 @@
+from __future__ import annotations
+
+import os
+import pwd
+import shutil
+from pathlib import Path
+
+
+def _effective_home() -> Path:
+    override_home = os.environ.get("TUX_BURNER_HOME", "").strip()
+    if override_home:
+        return Path(override_home).expanduser()
+
+    for user_env in ("SUDO_USER", "TUX_BURNER_Q2RTX_USER"):
+        user = os.environ.get(user_env, "").strip()
+        if not user:
+            continue
+        try:
+            return Path(pwd.getpwnam(user).pw_dir)
+        except KeyError:
+            pass
+
+    uid = os.environ.get("TUX_BURNER_Q2RTX_UID", "").strip()
+    if uid:
+        try:
+            return Path(pwd.getpwuid(int(uid)).pw_dir)
+        except (KeyError, ValueError):
+            pass
+    return Path.home()
+
+
+def effective_desktop_user_ids() -> tuple[int, int] | None:
+    uid_text = (
+        os.environ.get("TUX_BURNER_Q2RTX_UID", "").strip()
+        or os.environ.get("SUDO_UID", "").strip()
+    )
+    gid_text = (
+        os.environ.get("TUX_BURNER_Q2RTX_GID", "").strip()
+        or os.environ.get("SUDO_GID", "").strip()
+    )
+    uid = _parse_positive_int(uid_text)
+    gid = _parse_positive_int(gid_text)
+    user = (
+        os.environ.get("TUX_BURNER_Q2RTX_USER", "").strip()
+        or os.environ.get("SUDO_USER", "").strip()
+    )
+    if user and (uid is None or gid is None):
+        try:
+            entry = pwd.getpwnam(user)
+        except KeyError:
+            entry = None
+        if entry is not None:
+            uid = entry.pw_uid if uid is None else uid
+            gid = entry.pw_gid if gid is None else gid
+    if uid is None or gid is None:
+        return None
+    return uid, gid
+
+
+def claim_desktop_user_ownership(
+    path: str | Path,
+    *,
+    recursive: bool = False,
+    include_parents: bool = False,
+) -> None:
+    if os.geteuid() != 0:
+        return
+    ids = effective_desktop_user_ids()
+    if ids is None:
+        return
+    path = Path(path).expanduser()
+    if not _is_under_effective_desktop_path(path, uid=ids[0]):
+        return
+    paths = _ownership_paths(path, recursive=recursive)
+    if include_parents:
+        paths = [*_ownership_parent_paths(path), *paths]
+    for item in paths:
+        try:
+            os.lchown(item, ids[0], ids[1])
+        except (FileNotFoundError, PermissionError, OSError):
+            continue
+
+
+def _parse_positive_int(value: str) -> int | None:
+    try:
+        parsed = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _is_under_effective_home(path: Path) -> bool:
+    try:
+        home = _effective_home().expanduser().resolve(strict=False)
+        resolved = path.expanduser().resolve(strict=False)
+        return resolved == home or home in resolved.parents
+    except OSError:
+        return False
+
+
+def _is_under_effective_desktop_path(path: Path, *, uid: int) -> bool:
+    return _is_under_effective_home(path) or _is_under_effective_runtime_dir(
+        path, uid=uid
+    )
+
+
+def _is_under_effective_runtime_dir(path: Path, *, uid: int) -> bool:
+    try:
+        runtime_dir = (Path("/run/user") / str(int(uid))).resolve(strict=False)
+        resolved = path.expanduser().resolve(strict=False)
+        return resolved == runtime_dir or runtime_dir in resolved.parents
+    except (OSError, ValueError):
+        return False
+
+
+def _ownership_paths(path: Path, *, recursive: bool) -> list[Path]:
+    if not recursive or not path.exists() or not path.is_dir():
+        return [path]
+    paths = [path]
+    for root, dirs, files in os.walk(path):
+        root_path = Path(root)
+        paths.extend(root_path / name for name in dirs)
+        paths.extend(root_path / name for name in files)
+    return paths
+
+
+def _ownership_parent_paths(path: Path) -> list[Path]:
+    try:
+        home = _effective_home().expanduser().resolve(strict=False)
+        resolved = path.expanduser().resolve(strict=False)
+    except OSError:
+        return []
+    parents = [parent for parent in resolved.parents if parent != home and home in parent.parents]
+    return list(reversed(parents))
+
+
+# Tux Burner change: pre-rename config directory names (PenguinBurner and its
+# AMD port). Their contents (saved profiles, run history, settings) are copied
+# - never moved or deleted - into the new directory on first use.
+_LEGACY_CONFIG_DIR_NAME = "PenguinBurner"
+_LEGACY_SETTINGS_FILE = "penguin_burner.toml"
+_NEW_SETTINGS_FILE = "tux_burner.toml"
+
+
+def _migrate_legacy_config_dir(config_root: Path, new_dir: Path) -> None:
+    """Copy ``<config>/PenguinBurner`` to ``<config>/TuxBurner`` once.
+
+    Idempotent and best effort: runs only while the new directory does not
+    exist, leaves the old directory untouched, and never raises.
+    """
+    old_dir = config_root / _LEGACY_CONFIG_DIR_NAME
+    try:
+        if new_dir.exists() or not old_dir.is_dir() or old_dir.is_symlink():
+            return
+        shutil.copytree(old_dir, new_dir, symlinks=True)
+        legacy_settings = new_dir / _LEGACY_SETTINGS_FILE
+        if legacy_settings.is_file() and not (new_dir / _NEW_SETTINGS_FILE).exists():
+            legacy_settings.rename(new_dir / _NEW_SETTINGS_FILE)
+        claim_desktop_user_ownership(new_dir, recursive=True)
+    except OSError:
+        return
+
+
+def default_user_config_dir() -> Path:
+    config_root = _effective_home() / ".config"
+    new_dir = config_root / "TuxBurner"
+    _migrate_legacy_config_dir(config_root, new_dir)
+    return new_dir
+
+
+def default_saved_uv_dir() -> Path:
+    return _effective_home() / "saved-uv"
+
+
+def default_runtime_config_path() -> Path:
+    return default_user_config_dir() / "tux_burner.toml"
+
+
+def default_afterburner_root() -> Path:
+    return default_user_config_dir() / "afterburner-profiles"
+
+
+def managed_afterburner_root() -> Path:
+    return default_afterburner_root().resolve()
+
+
+def resolve_afterburner_root(afterburner_root=None) -> Path:
+    if afterburner_root is not None:
+        text = str(afterburner_root).strip()
+        if text:
+            return Path(text).expanduser()
+
+    override = os.environ.get("TUX_BURNER_AFTERBURNER_ROOT", "").strip()
+    if override:
+        return Path(override).expanduser()
+    return default_afterburner_root()
+
+
+def validate_afterburner_export_root(afterburner_root) -> list[str]:
+    root = resolve_afterburner_root(afterburner_root)
+    problems = []
+    if not afterburner_global_profile(root).is_file():
+        problems.append(f"missing {afterburner_global_profile(root).name}")
+    if not afterburner_profiles_dir(root).is_dir():
+        problems.append(f"missing {afterburner_profiles_dir(root).name}/")
+    return problems
+
+
+def sync_afterburner_export_tree(source_root, destination_root=None) -> Path:
+    source_root = resolve_afterburner_root(source_root).resolve()
+    problems = validate_afterburner_export_root(source_root)
+    if problems:
+        raise FileNotFoundError(
+            "Invalid Afterburner export directory: "
+            + ", ".join(problems)
+            + f" under {source_root}"
+        )
+
+    if destination_root is None:
+        destination_root = managed_afterburner_root()
+    else:
+        destination_root = resolve_afterburner_root(destination_root).resolve()
+
+    if source_root == destination_root:
+        return destination_root
+
+    destination_root.parent.mkdir(parents=True, exist_ok=True)
+    if destination_root.exists():
+        shutil.rmtree(destination_root)
+    shutil.copytree(source_root, destination_root)
+    return destination_root
+
+
+def afterburner_profiles_dir(afterburner_root=None) -> Path:
+    return resolve_afterburner_root(afterburner_root) / "Profiles"
+
+
+def afterburner_global_profile(afterburner_root=None) -> Path:
+    return resolve_afterburner_root(afterburner_root) / "MSIAfterburner.cfg"
+
+
+def discover_afterburner_device_profiles(afterburner_root=None):
+    return sorted(afterburner_profiles_dir(afterburner_root).glob("VEN_*.cfg"))
+
+
+def default_afterburner_profiles_dir() -> Path:
+    return afterburner_profiles_dir()
+
+
+def default_afterburner_global_profile() -> Path:
+    return afterburner_global_profile()
+
+
+def default_afterburner_device_profile() -> Path:
+    matches = discover_afterburner_device_profiles()
+    if matches:
+        return matches[0]
+    return default_afterburner_profiles_dir() / "GPU_PROFILE.cfg"

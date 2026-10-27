@@ -1,0 +1,22 @@
+{
+  "file_format_version": "1.2.1",
+  "layer": {
+    "name": "VK_LAYER_TUXBURNER_latency",
+    "type": "GLOBAL",
+    "api_version": "1.4.0",
+    "library_path": "@PB_LAYER_LIBRARY_PATH@",
+    "library_arch": "@PB_LAYER_LIBRARY_ARCH@",
+    "implementation_version": "1",
+    "description": "Tux Burner latency telemetry observer",
+    "functions": {
+      "vkGetInstanceProcAddr": "vkGetInstanceProcAddr",
+      "vkGetDeviceProcAddr": "vkGetDeviceProcAddr"
+    },
+    "enable_environment": {
+      "TUX_BURNER": "1"
+    },
+    "disable_environment": {
+      "DISABLE_TUX_BURNER_LATENCY_LAYER": ""
+    }
+  }
+}

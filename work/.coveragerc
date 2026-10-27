@@ -1,0 +1,55 @@
+# Coverage scope for the testable logic of Tux Burner.
+#
+# The omitted files cannot run without a real NVIDIA GPU / NVML / NVAPI, a live
+# CUDA or Q2RTX subprocess, network downloads, or an X11/Wayland display. We do
+# not mock hardware, so those integration entry points are excluded and the
+# reported number reflects coverage of testable logic. Directories that mix
+# testable logic with hardware (auto_uv/stability/, runtime/gpu_control/) are omitted at
+# the file level so their tested modules still count.
+[run]
+source =
+    auto_uv
+    cli
+    common
+    ui
+    curve_editors
+    integrations
+    profiles
+    overlay
+    runtime
+
+omit =
+    */tests/*
+    # Legacy shared helpers predate coverage scoping; only the new concise
+    # logging modules in common/ are measured here.
+    common/tux_burner_paths.py
+    common/tux_burner_errors.py
+    common/subprocess_locale.py
+    common/cli_output.py
+    # --- Live NVIDIA GPU / NVML / NVAPI ---
+    runtime/gpu_control/nvml_runtime_session.py
+    runtime/gpu_control/live_gpu_telemetry_text.py
+    runtime/fan_control/runtime_loop.py
+    auto_uv/initial_check/auto_uv_hardware_initial_check.py
+    overlay/telemetry/nvapi_marker_bridge.py
+    # --- External-process workload runners (Q2RTX, CUDA) + downloads ---
+    auto_uv/stability/q2rtx/runtime.py
+    auto_uv/stability/q2rtx/process_harness.py
+    auto_uv/stability/q2rtx/downloader.py
+    auto_uv/stability/q2rtx/assets.py
+    auto_uv/stability/q2rtx/install.py
+    auto_uv/stability/q2rtx/telemetry.py
+    auto_uv/stability/cuda_bruteforce.py
+    runtime/stability_test/q2rtx_cuda_workload_config.py
+    auto_uv/q2rtx/q2rtx_cuda_voltage_probe.py
+    auto_uv/q2rtx/q2rtx_cuda_probe_runner.py
+    auto_uv/final_verification/main_loop.py
+    profiles/verification/runner.py
+    # --- Overlay native/display integration ---
+    overlay/display.py
+
+[report]
+exclude_also =
+    if TYPE_CHECKING:
+    raise NotImplementedError
+    if __name__ == .__main__.:
