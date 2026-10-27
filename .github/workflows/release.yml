@@ -150,6 +150,8 @@ jobs:
         run: |
           mkdir -p release
           cp built/pkg-*/* built/source/*.tar.gz release/
+          # debug-symbol packages are built next to the real ones; they are not release files
+          rm -f release/*-debug-*.pkg.tar.* release/*dbgsym*.deb release/*debuginfo*.rpm release/*debugsource*.rpm
           cp work/docs/user-guide/Tux-Burner-User-Guide.pdf release/
           (cd release && sha256sum -- * > SHA256SUMS)
           # arch + deb + rpm + source tarball + PDF + SHA256SUMS
