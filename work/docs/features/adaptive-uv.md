@@ -5,7 +5,6 @@ to meet your game's FPS target while reducing power use when there is headroom.
 Create profiles with [Auto-UV](auto-uv.md), then enable Adaptive per game in
 [Game Library](game-library.md).
 
-![Stored Efficiency, Balanced and Performance profiles](../assets/profiles-management.png)
 
 ## Tiers
 

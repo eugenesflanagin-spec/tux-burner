@@ -5,7 +5,6 @@
 The overlay shows live FPS, latency, GPU telemetry, and the active profile
 while you play.
 
-![Overlay configuration tab](../assets/overlay.png)
 
 ## Enabling the overlay
 

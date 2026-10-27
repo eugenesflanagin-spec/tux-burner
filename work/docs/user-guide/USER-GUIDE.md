@@ -90,7 +90,7 @@ The package `provides` and `conflicts` with `penguin-burner` and `penguin-burner
 
 ```bash
 git clone https://github.com/eugenesflanagin-spec/tux-burner
-cd penguin-burner-amd
+cd tux-burner
 git checkout v0.99          # or the branch you want
 packaging/build-arch-local.sh
 sudo pacman -U /path/shown/at/the/end/tux-burner-0.99-1-x86_64.pkg.tar.zst
@@ -315,7 +315,7 @@ tburn-cli --amd-restore lact                                  # or: stock
 tburn-cli --daemon-status
 ```
 
-`power=` takes watts or a percent of the default cap (`power=110%`). `fan=` takes up to five `TEMP:PERCENT` points. `zero_rpm=on|off` is also accepted.
+`power=` takes watts or a percent of the default cap (`power=110%`). `fan=` takes up to five `TEMP:PERCENT` points; they are shown in the plan, but applying never writes a fan curve (fan control is refused while LACT runs). `zero_rpm=on|off` is also accepted.
 
 ---
 

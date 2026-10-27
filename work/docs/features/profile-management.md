@@ -2,7 +2,6 @@
 
 Use **Profiles** to apply, verify, edit, export, and organize saved curves.
 
-![Stored undervolt profiles](../assets/profiles-management.png)
 
 ## The table
 

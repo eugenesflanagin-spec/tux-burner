@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+# Tux Burner change: this script is upstream's publishing flow and is disabled here; Tux Burner
+# releases come from .github/workflows/release.yml. Set TUX_BURNER_ALLOW_UPSTREAM_SCRIPTS=1 to run it anyway.
+if [ "${TUX_BURNER_ALLOW_UPSTREAM_SCRIPTS:-}" != 1 ] && [ "${1:-}" != "--help" ] && [ "${1:-}" != "-h" ]; then
+    echo "$0: disabled in Tux Burner (releases are made by .github/workflows/release.yml)." >&2
+    exit 1
+fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

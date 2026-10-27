@@ -8,7 +8,6 @@ either from the **Profiles** tab (right-click → Edit VF Curve / Edit Fan Curve
 
 ## VF curve editor
 
-![VF curve editor](../assets/vf-curve-editor.png)
 
 Tune the GPU clock at each voltage bin. Three traces are drawn:
 
@@ -22,7 +21,6 @@ selected bin and verification state.
 
 ## Fan curve editor
 
-![Fan curve editor](../assets/fan-curve-editor.png)
 
 Tune fan % against temperature with the same draft / before-edit / measured
 traces. Measured points show your card's real behavior so you can shape a curve

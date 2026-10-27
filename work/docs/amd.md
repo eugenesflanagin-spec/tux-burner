@@ -2,7 +2,7 @@
 
 This build of Tux Burner drives AMD Radeon cards through the amdgpu kernel
 driver's sysfs OverDrive interface instead of NVML/NVAPI. It was ported and
-tested read-only on a Radeon RX 9070 XT (Navi 48, gfx1201).
+tested and used daily on a Radeon RX 9070 XT (Navi 48, gfx1201).
 
 ## What maps to what
 
@@ -92,7 +92,7 @@ hard floor.
 
 The NVIDIA Auto-UV scan searches a per-point curve; AMD has one offset, so
 `--amd-auto-uv` runs a one-dimensional ladder: 0 mV, -10, -20 ... down to the
-driver minimum, each rung verified with the OpenCL brute-force workload (the
+configurable voltage floor (default -150 mV; suggested presets and tiers are capped at -110 mV), each rung verified with the OpenCL brute-force workload (the
 CUDA workload ported 1:1, same exit codes). The deepest passing rung plus a
 20 mV margin becomes three profiles: Efficiency (stock power cap), Balanced
 (the cap in force when the scan started) and Performance (your SCLK offset,

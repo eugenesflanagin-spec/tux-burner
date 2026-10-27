@@ -11,9 +11,9 @@ Plain words first: the commands that **only read** are `--version`, `--help`, `-
 | Option | What it does |
 | --- | --- |
 | `--amd-status` | Show ranges, live values, fan curve and LACT state. Read-only. |
-| `--amd-plan KEY=VALUE ...` | Describe a plan: `vo=<mV>` `sclk=<MHz>` `mclk=<MHz>` `power=<W>` or `<NN%>` `fan=T:P,T:P,...` (up to 5 points) `zero_rpm=on|off`. Alone it only previews. |
+| `--amd-plan KEY=VALUE ...` | Describe a plan: `vo=<mV>` `sclk=<MHz>` `mclk=<MHz>` `power=<W>` or `<NN%>` `fan=T:P,T:P,...` (up to 5 points) `zero_rpm=on|off`. Alone it only previews. Fan values are shown but never written by `--amd-apply`. |
 | `--amd-dry-run` | With `--amd-apply`, `--amd-save-profile`, `--amd-auto-uv` or `--amd-stress`: show, change nothing. |
-| `--amd-apply` | Write the plan now (checked against the live driver ranges and both floors). |
+| `--amd-apply` | Write the undervolt, core clock, memory clock and power cap now (checked against the live driver ranges and both floors). Fan curves are never written by apply, and fan control is refused while LACT runs. |
 | `--amd-save-profile NAME` | Save the plan as a Tux Burner profile (marked unverified). |
 | `--amd-profile-tier T` | Tier for the saved profile: `efficiency`, `balanced`, `performance`. |
 | `--amd-export-lact [PATH]` | Write the plan as a LACT config fragment (to the screen without PATH). |
@@ -24,6 +24,9 @@ Plain words first: the commands that **only read** are `--version`, `--help`, `-
 | `--amd-set-daemon-floor MV\|default` | Set the root service's own floor. |
 | `--amd-restore lact\|stock` | Give the GPU back to LACT, or reset to driver defaults. |
 | `--override-lact` | Write although LACT is running. |
+| `--daemon-status` | Print the status of the Tux Burner hardware daemon and exit. Read-only. |
+| `--install-systemd-service` | Install and start the persistent `tux-burnerd` systemd service (asks for root). |
+| `--uninstall-systemd-service` | Stop and remove that service (`--deinstall-systemd-service` is the same). |
 
 ## Full `--help` output
 

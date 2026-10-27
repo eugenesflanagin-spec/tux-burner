@@ -3053,7 +3053,7 @@ def test_scan_tuning_memory_offset_is_mhz_with_mt_s_shown_and_doubled(
 
 def test_about_dialog_preserves_project_links() -> None:
     assert "https://github.com/jpietek/PenguinBurner" in ABOUT_LINKS_HTML
-    assert "penguin-burner-amd/issues" in ABOUT_LINKS_HTML
+    assert "tux-burner/issues" in ABOUT_LINKS_HTML
     assert "not endorsed by or affiliated" in ABOUT_LINKS_HTML
     assert "Copyright (C) 2026 by Eugene Flanagin" in ABOUT_LINKS_HTML
     assert "Having issues with Tux Burner?" in ABOUT_LINKS_HTML

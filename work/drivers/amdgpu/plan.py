@@ -166,7 +166,7 @@ def validate_plan(
     voltage_floor_mv: int | None = None,
 ) -> list[str]:
     """Human-readable problems; empty means the plan fits the live OD_RANGE
-    and the configurable VDDGFX safety floor (default -110 mV)."""
+    and the configurable VDDGFX safety floor (default -150 mV)."""
     errors: list[str] = []
     od = state.od
     floor = voltage_offset_floor_mv(voltage_floor_mv)

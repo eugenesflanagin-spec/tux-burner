@@ -166,7 +166,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb1-
 from either. Build it yourself from the source tree:</p>
 <div class="sourceCode" id="user-guide--cb2"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb2-1"><a href="#user-guide--cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/eugenesflanagin-spec/tux-burner</span>
-<span id="user-guide--cb2-2"><a href="#user-guide--cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> penguin-burner-amd</span>
+<span id="user-guide--cb2-2"><a href="#user-guide--cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> tux-burner</span>
 <span id="user-guide--cb2-3"><a href="#user-guide--cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout v0.99          <span class="co"># or the branch you want</span></span>
 <span id="user-guide--cb2-4"><a href="#user-guide--cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">packaging/build-arch-local.sh</span></span>
 <span id="user-guide--cb2-5"><a href="#user-guide--cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-U</span> /path/shown/at/the/end/tux-burner-0.99-1-x86_64.pkg.tar.zst</span></code></pre></div>
@@ -581,8 +581,9 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="user-guide--cb6-
 <span id="user-guide--cb6-12"><a href="#user-guide--cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">tburn-cli</span> <span class="at">--daemon-status</span></span></code></pre></div>
 <p><code>power=</code> takes watts or a percent of the default cap
 (<code>power=110%</code>). <code>fan=</code> takes up to five
-<code>TEMP:PERCENT</code> points. <code>zero_rpm=on|off</code> is also
-accepted.</p>
+<code>TEMP:PERCENT</code> points; they are shown in the plan, but
+applying never writes a fan curve (fan control is refused while LACT
+runs). <code>zero_rpm=on|off</code> is also accepted.</p>
 <hr />
 <h2 id="user-guide--11-files-and-settings">11. Files and settings</h2>
 <table>
@@ -813,8 +814,9 @@ nothing.</td>
 </tr>
 <tr>
 <td><code>--amd-apply</code></td>
-<td>Write the plan now (checked against the live driver ranges and both
-floors).</td>
+<td>Write the undervolt, core clock, memory clock and power cap now
+(checked against the live driver ranges and both floors). Fan curves are
+never written by apply, and fan control is refused while LACT runs.</td>
 </tr>
 <tr>
 <td><code>--amd-save-profile NAME</code></td>
@@ -862,6 +864,21 @@ floor), <code>--amd-auto-uv-rung-seconds S</code> (60),
 <tr>
 <td><code>--override-lact</code></td>
 <td>Write although LACT is running.</td>
+</tr>
+<tr>
+<td><code>--daemon-status</code></td>
+<td>Print the status of the Tux Burner hardware daemon and exit.
+Read-only.</td>
+</tr>
+<tr>
+<td><code>--install-systemd-service</code></td>
+<td>Install and start the persistent <code>tux-burnerd</code> systemd
+service (asks for root).</td>
+</tr>
+<tr>
+<td><code>--uninstall-systemd-service</code></td>
+<td>Stop and remove that service
+(<code>--deinstall-systemd-service</code> is the same).</td>
 </tr>
 </tbody>
 </table>

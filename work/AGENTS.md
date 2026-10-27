@@ -165,9 +165,9 @@ run, stop and report the exact blocker.
 
 - Publish only when explicitly requested. Prepare version metadata and release
   notes, pass the required checks, and merge the release commit to `main` first.
-- Use `scripts/release.sh VERSION` for GitHub/tag, PyPI, AUR, COPR, Ubuntu PPA,
-  and Flatpak/Pages. See [the release guide](docs/releasing.md) for prerequisites
-  and retry behavior. Do not substitute a partial manual publication.
+- Tux Burner releases are made by `.github/workflows/release.yml` on a `v*` tag
+  (see `packaging/README.md`). `scripts/release.sh` is upstream's and is disabled here.
+  Do not substitute a partial manual publication.
 - Releases must run noninteractively. Check signing and credentials before
   building; never put private keys, passphrases, or tokens in the repository.
 - Keep instructions portable: use repository-relative commands and documented

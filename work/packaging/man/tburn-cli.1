@@ -37,13 +37,13 @@ Print the GPU's OverDrive ranges, live values, fan curve and LACT state. Read-on
 .BI \-\-amd\-plan " KEY=VALUE..."
 Describe a tuning plan. Keys: vo (VDDGFX offset in mV, negative = undervolt), sclk (core
 clock offset in MHz), mclk (memory clock max in MHz), power (watts or a percentage such as 110%),
-fan (up to five TEMP:PERCENT points). Without \fB\-\-amd\-apply\fR it only prints the writes.
+fan (up to five TEMP:PERCENT points; shown in the plan but never written by \fB\-\-amd\-apply\fR). Without \fB\-\-amd\-apply\fR it only prints the writes.
 .TP
 .B \-\-amd\-dry\-run
 With \fB\-\-amd\-apply\fR or \fB\-\-amd\-auto\-uv\fR: show what would be done, write nothing.
 .TP
 .B \-\-amd\-apply
-Write the plan through tux-burnerd. Refused while LACT (lactd) is running unless
+Write the undervolt, core clock, memory clock and power cap through tux-burnerd. Fan curves are never written by apply, and fan control is refused while LACT is running. Refused while LACT (lactd) is running unless
 \fB\-\-override\-lact\fR is given.
 .TP
 .BI \-\-amd\-save\-profile " NAME"

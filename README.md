@@ -26,7 +26,8 @@ Lower the voltage of your graphics card so it uses less power, runs cooler and q
 a little faster, then save the result as a profile.
 
 - **AMD amdgpu OverDrive backend** (the main addition of this fork): global VDDGFX voltage offset, core clock
-  offset, memory clock ceiling, power cap and the 5-point firmware fan curve, written by a small root service.
+  offset, memory clock ceiling and power cap, written by a small root service. The 5-point fan curve is read and shown; Apply
+  never writes it (the silent-fan engine in the daemon can run one, and fan control is refused while LACT runs).
 - **Auto-UV ladder for AMD**: steps the voltage down one rung at a time, stress-tests each rung with an OpenCL
   workload, and saves Efficiency / Balanced / Performance profiles from the deepest stable rung plus a margin.
 - **Safety floors**: the voltage offset cannot go deeper than -150 mV by default (suggested settings stay at -110 mV

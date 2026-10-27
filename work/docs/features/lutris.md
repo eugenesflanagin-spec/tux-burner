@@ -18,7 +18,6 @@ Wrapping and compatibility-tool changes take effect on the next launch.
 Profile modes, Adaptive targets and overlay visibility also apply live to an
 already wrapped game, with failures reported alongside the saved preference.
 
-![Game Library with a Lutris game's settings](../assets/game-library.png)
 
 See [per-game settings](game-library.md#per-game-settings) for profiles,
 Adaptive targets, GPU selection, and overlay controls.

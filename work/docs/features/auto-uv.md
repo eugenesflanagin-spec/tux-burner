@@ -4,7 +4,6 @@ Auto-UV tests your GPU with Q2RTX and CUDA, finds stable voltage/frequency
 settings, and saves verified profiles. Choose one tier or **All tiers** for
 an Efficiency, Balanced, and Performance set.
 
-![Auto-UV candidate sweep](../assets/auto-uv-scan.png)
 
 > GPU tuning can crash the driver or freeze the system. Auto-UV records
 > interrupted probes so later scans avoid the same voltage/clock region.
@@ -92,7 +91,6 @@ only when power, memory, curve shape, and measurement evidence are compatible.
 
 ## Custom tier targets
 
-![Auto-UV setup with Advanced controls for every tier](../assets/auto-uv-setup.png)
 
 Every tier has the same controls: **voltage target (mV), core clock target
 (MHz), memory offset (MHz), and power limit (W)**.

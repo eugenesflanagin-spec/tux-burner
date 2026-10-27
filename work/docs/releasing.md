@@ -1,5 +1,10 @@
 # Release Process
 
+Tux Burner releases are made by `.github/workflows/release.yml` on a `v*` tag; the
+steps are in `packaging/README.md` at the repository root. The rest of this page is
+upstream PenguinBurner's process, kept for reference. Its `scripts/release.sh` and the
+other publish scripts are disabled in Tux Burner unless `TUX_BURNER_ALLOW_UPSTREAM_SCRIPTS=1`.
+
 Run the complete release from a prepared, committed version:
 
 ```bash

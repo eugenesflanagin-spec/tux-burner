@@ -5,7 +5,6 @@
 After Auto-UV finds a stable undervolt, the GPU runs cooler — which makes a
 quiet fan curve practical. Tux Burner can generate one for you.
 
-![Fan curve editor](../assets/fan-curve-editor.png)
 
 ## How it works
 
